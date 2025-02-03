@@ -11,6 +11,7 @@ public abstract class AbstractTask {
 
     public AbstractTask() {
         this.id = TaskManager.getNextId();
+        this.status = StatusTypes.NEW;
     }
 
     @Override
@@ -65,5 +66,10 @@ public abstract class AbstractTask {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Id: " + this.getId() + "; Name: " + this.getName() + "; Description: " + this.getDescription() + "; Status: " + this.getStatus().name();
     }
 }

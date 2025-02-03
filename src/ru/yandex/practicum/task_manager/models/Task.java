@@ -15,18 +15,8 @@ public class Task extends AbstractTask {
         return epics;
     }
 
-    public void setEpics(HashMap<Integer, Epic> epics) {
-        this.epics = epics;
-    }
-
     public void addEpic(Epic epic) {
         if (!epics.containsKey(epic.getId()) && epic.getId() != null) {
-            epics.put(epic.getId(), epic);
-        }
-    }
-
-    public void updateEpic(Epic epic) {
-        if (epics.containsKey(epic.getId())) {
             epics.put(epic.getId(), epic);
         }
     }
@@ -37,5 +27,9 @@ public class Task extends AbstractTask {
 
     public void clearEpics() {
         epics.clear();
+    }
+
+    public Epic getEpic(int epicId) {
+        return this.epics.get(epicId);
     }
 }

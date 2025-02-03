@@ -12,6 +12,7 @@ public class Epic extends AbstractTask {
     public Epic(Task task) {
         super();
         this.task = task;
+        this.subTasks = new HashMap<>();
     }
 
     @Override
@@ -43,8 +44,12 @@ public class Epic extends AbstractTask {
         super.setStatus(this.getStatus());
     }
 
+    public HashMap<Integer, SubTask> getSubTasks() {
+        return subTasks;
+    }
+
     public void addSubTask(SubTask subTask) {
-        if (subTask.getId() != null && subTasks.containsKey(subTask.getId())) {
+        if (subTask.getId() != null && !subTasks.containsKey(subTask.getId())) {
             subTasks.put(subTask.getId(), subTask);
         }
     }
@@ -55,11 +60,15 @@ public class Epic extends AbstractTask {
         }
     }
 
-    public void removeSubtask(SubTask subTask) {
-        subTasks.remove(subTask.getId());
+    public void removeSubtask(int id) {
+        subTasks.remove(id);
     }
 
     public void clearSubTasks() {
         this.subTasks.clear();
+    }
+
+    public SubTask getSubTask(int subTaskId) {
+        return this.getSubTasks().get(subTaskId);
     }
 }

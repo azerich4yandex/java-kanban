@@ -29,14 +29,14 @@ public class TaskManager {
     }
 
     public void addTask(Task task) {
-        if (!(tasks.containsKey(task.id)) && task.id != null) {
-            tasks.put(task.id, task);
+        if (!(tasks.containsKey(task.getId())) && task.getId() != null) {
+            tasks.put(task.getId(), task);
         }
     }
 
     public void updateTask(Task task) {
-        if (tasks.containsKey(task.id)) {
-            tasks.put(task.id, task);
+        if (tasks.containsKey(task.getId())) {
+            tasks.put(task.getId(), task);
         }
     }
 
@@ -48,5 +48,9 @@ public class TaskManager {
 
     public void clearTasks() {
         tasks.clear();
+    }
+
+    public void setTasks(HashMap<Integer, Task> tasks) {
+        this.tasks = tasks;
     }
 }
