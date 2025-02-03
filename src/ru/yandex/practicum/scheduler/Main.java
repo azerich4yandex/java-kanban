@@ -1,12 +1,12 @@
-package ru.yandex.practicum.task_manager;
+package ru.yandex.practicum.scheduler;
 
 import java.util.HashMap;
 import java.util.Scanner;
-import ru.yandex.practicum.task_manager.models.Epic;
-import ru.yandex.practicum.task_manager.models.SubTask;
-import ru.yandex.practicum.task_manager.models.Task;
-import ru.yandex.practicum.task_manager.models.enums.StatusTypes;
-import ru.yandex.practicum.task_manager.utils.TaskManager;
+import ru.yandex.practicum.scheduler.models.Epic;
+import ru.yandex.practicum.scheduler.models.SubTask;
+import ru.yandex.practicum.scheduler.models.Task;
+import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
+import ru.yandex.practicum.scheduler.utils.TaskManager;
 
 public class Main {
 

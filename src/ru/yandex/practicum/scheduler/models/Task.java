@@ -1,7 +1,7 @@
-package ru.yandex.practicum.task_manager.models;
+package ru.yandex.practicum.scheduler.models;
 
 import java.util.HashMap;
-import ru.yandex.practicum.task_manager.models.base.AbstractTask;
+import ru.yandex.practicum.scheduler.models.base.AbstractTask;
 
 public class Task extends AbstractTask {
     HashMap<Integer, Epic> epics;

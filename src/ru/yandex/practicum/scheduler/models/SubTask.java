@@ -1,6 +1,6 @@
-package ru.yandex.practicum.task_manager.models;
+package ru.yandex.practicum.scheduler.models;
 
-import ru.yandex.practicum.task_manager.models.base.AbstractTask;
+import ru.yandex.practicum.scheduler.models.base.AbstractTask;
 
 public class SubTask extends AbstractTask {
 

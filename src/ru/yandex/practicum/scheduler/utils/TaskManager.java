@@ -1,7 +1,7 @@
-package ru.yandex.practicum.task_manager.utils;
+package ru.yandex.practicum.scheduler.utils;
 
 import java.util.HashMap;
-import ru.yandex.practicum.task_manager.models.Task;
+import ru.yandex.practicum.scheduler.models.Task;
 
 public class TaskManager {
 

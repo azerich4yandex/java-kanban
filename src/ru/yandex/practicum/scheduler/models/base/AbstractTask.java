@@ -1,7 +1,7 @@
-package ru.yandex.practicum.task_manager.models.base;
+package ru.yandex.practicum.scheduler.models.base;
 
-import ru.yandex.practicum.task_manager.models.enums.StatusTypes;
-import ru.yandex.practicum.task_manager.utils.TaskManager;
+import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
+import ru.yandex.practicum.scheduler.utils.TaskManager;
 
 public abstract class AbstractTask {
     Integer id;
