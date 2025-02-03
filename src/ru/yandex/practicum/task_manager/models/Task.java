@@ -1,46 +1,41 @@
 package ru.yandex.practicum.task_manager.models;
 
-import ru.yandex.practicum.task_manager.models.enums.StatusTypes;
-import ru.yandex.practicum.task_manager.utils.TaskManager;
+import java.util.HashMap;
+import ru.yandex.practicum.task_manager.models.base.AbstractTask;
 
-public class Task {
-
-    public Integer uniqueId;
-    public String name;
-    public String description;
-    public StatusTypes status;
+public class Task extends AbstractTask {
+    HashMap<Integer, Epic> epics;
 
     public Task() {
-        this.uniqueId = TaskManager.getNextUniqueId();
+        super();
+        this.epics = new HashMap<>();
     }
 
-    @Override
-    public int hashCode() {
-        return uniqueId.hashCode();
+    public HashMap<Integer, Epic> getEpics() {
+        return epics;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
+    public void setEpics(HashMap<Integer, Epic> epics) {
+        this.epics = epics;
+    }
+
+    public void addEpic(Epic epic) {
+        if (!epics.containsKey(epic.getId()) && epic.getId() != null) {
+            epics.put(epic.getId(), epic);
         }
-        if (obj == null) {
-            return false;
-        }
-        if (this.getClass() != obj.getClass()) {
-            return false;
-        }
-
-        Task that = (Task) obj;
-
-        return this.uniqueId.equals(that.uniqueId);
     }
 
-    public StatusTypes getStatus() {
-        return status;
+    public void updateEpic(Epic epic) {
+        if (epics.containsKey(epic.getId())) {
+            epics.put(epic.getId(), epic);
+        }
     }
 
-    public void setStatus(StatusTypes status) {
-        this.status = status;
+    public void removeEpic(Epic epic) {
+        epics.remove(epic.getId());
+    }
+
+    public void clearEpics() {
+        epics.clear();
     }
 }

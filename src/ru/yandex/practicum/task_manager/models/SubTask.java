@@ -1,10 +1,13 @@
 package ru.yandex.practicum.task_manager.models;
 
-public class SubTask extends Task{
+import ru.yandex.practicum.task_manager.models.base.AbstractTask;
+
+public class SubTask extends AbstractTask {
 
     Epic epic;
 
     public SubTask(Epic epic) {
+        super();
         this.epic = epic;
     }
 

@@ -1,15 +1,17 @@
 package ru.yandex.practicum.task_manager.models;
 
 import java.util.HashMap;
+import ru.yandex.practicum.task_manager.models.base.AbstractTask;
 import ru.yandex.practicum.task_manager.models.enums.StatusTypes;
 
-public class Epic extends Task {
+public class Epic extends AbstractTask {
 
+    Task task;
     HashMap<Integer, SubTask> subTasks;
 
-    public Epic() {
+    public Epic(Task task) {
         super();
-        this.subTasks = new HashMap<>();
+        this.task = task;
     }
 
     @Override
@@ -42,14 +44,22 @@ public class Epic extends Task {
     }
 
     public void addSubTask(SubTask subTask) {
-        if (subTask.uniqueId != null && subTasks.containsKey(subTask.uniqueId)) {
-            subTasks.put(subTask.uniqueId, subTask);
+        if (subTask.getId() != null && subTasks.containsKey(subTask.getId())) {
+            subTasks.put(subTask.getId(), subTask);
         }
     }
 
     public void updateSubTask(SubTask subTask) {
-        if (subTask.uniqueId != null && subTasks.containsKey(subTask.uniqueId)) {
-            subTasks.put(subTask.uniqueId, subTask);
+        if (subTask.getId() != null && subTasks.containsKey(subTask.getId())) {
+            subTasks.put(subTask.getId(), subTask);
         }
+    }
+
+    public void removeSubtask(SubTask subTask) {
+        subTasks.remove(subTask.getId());
+    }
+
+    public void clearSubTasks() {
+        this.subTasks.clear();
     }
 }
