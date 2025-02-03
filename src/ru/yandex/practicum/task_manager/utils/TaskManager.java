@@ -7,14 +7,18 @@ import ru.yandex.practicum.task_manager.models.Task;
 
 public class TaskManager {
 
-    static int id;
-    HashMap<Integer, Task> tasks = new HashMap<>();
-    HashMap<Integer, SubTask> subTasks = new HashMap<>();
-    HashMap<Integer, Epic> epics = new HashMap<>();
+    static int uniqueId;
+    HashMap<Integer, Task> tasks;
+    HashMap<Integer, Epic> epics;
 
-    public static Integer getNextId() {
-        id++;
-        return id;
+    public TaskManager() {
+        this.tasks = new HashMap<>();
+        this.epics = new HashMap<>();
+    }
+
+    public static Integer getNextUniqueId() {
+        uniqueId++;
+        return uniqueId;
     }
 
     //<editor-fold desc="Tasks collection methods">
@@ -30,19 +34,19 @@ public class TaskManager {
     }
 
     public void addTask(Task task) {
-        if (!(tasks.containsKey(task.id)) && task.id != null) {
+        if (!(tasks.containsKey(task.uniqueId)) && task.uniqueId != null) {
             this.setTask(task);
         }
     }
 
     public void updateTask(Task task) {
-        if (tasks.containsKey(task.id)) {
+        if (tasks.containsKey(task.uniqueId)) {
             this.setTask(task);
         }
     }
 
     void setTask(Task task) {
-        this.tasks.put(task.id, task);
+        this.tasks.put(task.uniqueId, task);
     }
 
     public void removeTask(Integer id) {
@@ -52,66 +56,32 @@ public class TaskManager {
     }
     //</editor-fold>
 
-    //<editor-fold desc="SubTasks collection methods">
-    public HashMap<Integer, SubTask> getSubTasks() {
-        return this.subTasks;
-    }
-
-    public SubTask getSubTask(Integer id) {
-        if (id != null) {
-            return this.subTasks.get(id);
-        }
-        return null;
-    }
-
-    public void addSubTask(SubTask subTask) {
-        if (!(subTasks.containsKey(subTask.id)) && subTask.id != null) {
-            this.setSubTask(subTask);
-        }
-    }
-
-    public void updateSubTask(SubTask subTask) {
-        if (subTasks.containsKey(subTask.id)) {
-            this.setSubTask(subTask);
-        }
-    }
-
-    void setSubTask(SubTask subTask) {
-        this.subTasks.put(subTask.id, subTask);
-    }
-
-    public void removeSubtask(Integer id) {
-        if (this.subTasks != null) {
-            this.subTasks.remove(id);
-        }
-    }
-    //</editor-fold>
-
+    //<editor-fold desc="Epic collection methods">
     public HashMap<Integer, Epic> getEpics() {
-        return this.epics;
+        return epics;
     }
 
     public Epic getEpic(Integer id) {
         if (id != null) {
-            return this.epics.get(id);
+            return epics.get(id);
         }
         return null;
     }
 
     public void addEpic(Epic epic) {
-        if (!(epics.containsKey(epic.id)) && epic.id != null) {
-            this.setEpic(epic);
+        if (!(epics.containsKey(epic.uniqueId)) && epic.uniqueId != null) {
+            setEpic(epic);
         }
     }
 
     public void updateEpic(Epic epic) {
-        if (this.epics.containsKey(epic.id)) {
-            this.epics.put(epic.id, epic);
+        if (this.epics.containsKey(epic.uniqueId)) {
+            this.epics.put(epic.uniqueId, epic);
         }
     }
 
     void setEpic(Epic epic) {
-        this.epics.put(epic.id, epic);
+        this.epics.put(epic.uniqueId, epic);
     }
 
     public void removeEpic(Integer id) {
@@ -119,4 +89,5 @@ public class TaskManager {
             this.epics.remove(id);
         }
     }
+    //</editor-fold>
 }

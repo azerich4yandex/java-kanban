@@ -1,23 +1,22 @@
 package ru.yandex.practicum.task_manager.models;
 
-import java.util.Objects;
 import ru.yandex.practicum.task_manager.models.enums.StatusTypes;
 import ru.yandex.practicum.task_manager.utils.TaskManager;
 
 public class Task {
 
-    public Integer id;
+    public Integer uniqueId;
     public String name;
     public String description;
     public StatusTypes status;
 
     public Task() {
-        this.id = TaskManager.getNextId();
+        this.uniqueId = TaskManager.getNextUniqueId();
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return uniqueId.hashCode();
     }
 
     @Override
@@ -34,7 +33,7 @@ public class Task {
 
         Task that = (Task) obj;
 
-        return this.id.equals(that.id);
+        return this.uniqueId.equals(that.uniqueId);
     }
 
     public StatusTypes getStatus() {
