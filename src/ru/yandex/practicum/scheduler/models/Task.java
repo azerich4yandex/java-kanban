@@ -15,18 +15,36 @@ public class Task extends AbstractTask {
         return epics;
     }
 
-    public void addEpic(Epic epic) {
+    public boolean addEpic(Epic epic) {
         if (!epics.containsKey(epic.getId()) && epic.getId() != null) {
             epics.put(epic.getId(), epic);
+            return true;
         }
+        return false;
     }
 
-    public void removeEpic(Epic epic) {
-        epics.remove(epic.getId());
+    public boolean updateEpic(Epic epic) {
+        if (epics.containsKey(epic.getId())) {
+            epics.put(epic.getId(), epic);
+            return true;
+        }
+        return false;
     }
 
-    public void clearEpics() {
-        epics.clear();
+    public boolean removeEpic(Epic epic) {
+        if (epics != null) {
+            epics.remove(epic.getId());
+            return true;
+        }
+        return false;
+    }
+
+    public boolean clearEpics() {
+        if (epics != null) {
+            epics.clear();
+            return true;
+        }
+        return false;
     }
 
     public Epic getEpic(int epicId) {

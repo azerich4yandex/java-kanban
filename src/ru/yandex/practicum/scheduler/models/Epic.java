@@ -48,27 +48,35 @@ public class Epic extends AbstractTask {
         return subTasks;
     }
 
-    public void addSubTask(SubTask subTask) {
+    public boolean addSubTask(SubTask subTask) {
         if (subTask.getId() != null && !subTasks.containsKey(subTask.getId())) {
             subTasks.put(subTask.getId(), subTask);
+            return true;
         }
+        return false;
     }
 
-    public void updateSubTask(SubTask subTask) {
+    public boolean updateSubTask(SubTask subTask) {
         if (subTask.getId() != null && subTasks.containsKey(subTask.getId())) {
             subTasks.put(subTask.getId(), subTask);
+            return true;
         }
+        return false;
     }
 
-    public void removeSubtask(int id) {
-        subTasks.remove(id);
+    public boolean removeSubtask(int id) {
+        if (subTasks != null) {
+            subTasks.remove(id);
+            return true;
+        }
+        return false;
     }
 
-    public void clearSubTasks() {
-        this.subTasks.clear();
-    }
-
-    public SubTask getSubTask(int subTaskId) {
-        return this.getSubTasks().get(subTaskId);
+    public boolean clearSubTasks() {
+        if (subTasks != null) {
+            this.subTasks.clear();
+            return true;
+        }
+        return false;
     }
 }

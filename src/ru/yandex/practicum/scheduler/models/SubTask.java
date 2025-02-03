@@ -10,12 +10,4 @@ public class SubTask extends AbstractTask {
         super();
         this.epic = epic;
     }
-
-    public Epic getEpic() {
-        return epic;
-    }
-
-    public void setEpic(Epic epic) {
-        this.epic = epic;
-    }
 }

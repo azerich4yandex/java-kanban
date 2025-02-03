@@ -23,6 +23,7 @@ public class Main {
 
             String command = scanner.nextLine();
             switch (command) {
+                case "0" -> printDetailTasks();
                 case "1" -> printTasks();
                 case "2" -> clearTasks();
                 case "3" -> addTask();
@@ -110,8 +111,11 @@ public class Main {
         if (!taskManager.getTask(taskId).getEpic(epicId).getSubTasks().containsKey(subTaskId)) {
             System.out.println("Подзадача не найдена");
         } else {
-            taskManager.getTask(taskId).getEpic(epicId).removeSubtask(subTaskId);
-            System.out.println("Подзадача удалена");
+            if (taskManager.getTask(taskId).getEpic(epicId).removeSubtask(subTaskId)) {
+                System.out.println("Подзадача удалена");
+            } else {
+                System.out.println("Во время удаления произошла ошибка");
+            }
         }
     }
 
@@ -125,7 +129,8 @@ public class Main {
         if (!taskManager.getTask(taskId).getEpic(epicId).getSubTasks().containsKey(subTaskId)) {
             System.out.println("Введён некорректный номер подзадачи");
         } else {
-            SubTask subTask = taskManager.getTask(taskId).getEpic(epicId).getSubTask(subTaskId);
+            SubTask subTask = new SubTask(taskManager.getTask(taskId).getEpic(epicId));
+            subTask.setId(subTaskId);
 
             System.out.println("Введите новое наименование (пусто - оставить без изменений)");
             String newName = scanner.nextLine();
@@ -155,6 +160,12 @@ public class Main {
                 }
                 System.out.println("Статус изменён");
             }
+
+            if (taskManager.getTask(taskId).getEpic(epicId).updateSubTask(subTask)) {
+                System.out.println("Изменения сохранены");
+            } else {
+                System.out.println("Во время изменения произошла ошибка");
+            }
         }
     }
 
@@ -168,12 +179,19 @@ public class Main {
         subTask.setName(name);
         subTask.setDescription(description);
 
-        taskManager.getTask(taskId).getEpic(epicId).addSubTask(subTask);
-        System.out.println("Подзадача добавлена");
+        if (taskManager.getTask(taskId).getEpic(epicId).addSubTask(subTask)) {
+            System.out.println("Подзадача добавлена");
+        } else {
+            System.out.println("Во время добавления произошла ошибка");
+        }
     }
 
     static void clearSubTasks(int taskId, int epicId) {
-        taskManager.getTask(taskId).getEpic(epicId).clearSubTasks();
+        if (taskManager.getTask(taskId).getEpic(epicId).clearSubTasks()) {
+            System.out.println("Список очищен");
+        } else {
+            System.out.println("Во время очистки списка произошла ошибка");
+        }
     }
 
     static void printSubTasks(int taskId, int epicId) {
@@ -210,12 +228,15 @@ public class Main {
 
         if (taskManager.getTask(id).getEpics().containsKey(epicId)) {
             Epic epic = taskManager.getTask(id).getEpics().get(epicId);
-            taskManager.getTask(id).removeEpic(epic);
-            System.out.println("Эпик удалён");
+            if (taskManager.getTask(id).removeEpic(epic)) {
+                System.out.println("Эпик удалён");
+            } else {
+                System.out.println("Во время удаления произошла ошибка");
+            }
         }
     }
 
-    static void updateEpic(int id) {
+    static void updateEpic(int taskId) {
 
         System.out.println("Введите идентификатор эпика");
         int epicId = 0;
@@ -223,10 +244,11 @@ public class Main {
             epicId = scanner.nextInt();
         }
 
-        if (!taskManager.getTask(id).getEpics().containsKey(epicId)) {
+        if (!taskManager.getTask(taskId).getEpics().containsKey(epicId)) {
             System.out.println("Введён некорректный номер эпика");
         } else {
-            Epic epic = taskManager.getTask(id).getEpics().get(epicId);
+            Epic epic = new Epic(taskManager.getTask(taskId));
+            epic.setId(epicId);
 
             System.out.println("Введите новое наименование (пусто - оставить без изменений)");
             String newName = scanner.nextLine();
@@ -242,7 +264,12 @@ public class Main {
                 System.out.println("Описание изменено");
                 epic.setDescription(newDescription);
             }
-            System.out.println("Эпик изменён");
+
+            if (taskManager.getTask(taskId).updateEpic(epic)) {
+                System.out.println("Эпик изменён");
+            } else {
+                System.out.println("Во время изменения произошла ошибка");
+            }
         }
     }
 
@@ -257,12 +284,19 @@ public class Main {
         epic.setName(name);
         epic.setDescription(description);
 
-        taskManager.getTask(id).addEpic(epic);
-        System.out.println("Эпик добавлен");
+        if (taskManager.getTask(id).addEpic(epic)) {
+            System.out.println("Эпик добавлен");
+        } else {
+            System.out.println("Во время добавления произошла ошибка");
+        }
     }
 
     static void clearEpics(int id) {
-        taskManager.getTask(id).clearEpics();
+        if (taskManager.getTask(id).clearEpics()) {
+            System.out.println("Список очищен");
+        } else {
+            System.out.println("Во время очистки списка произошла ошибка");
+        }
     }
 
     static void printEpics(int id) {
@@ -297,8 +331,11 @@ public class Main {
         }
 
         if (taskManager.getTasks().containsKey(id)) {
-            taskManager.removeTask(id);
-            System.out.println("Задача удалена");
+            if (taskManager.removeTask(id)) {
+                System.out.println("Задача удалена");
+            } else {
+                System.out.println("Во время удаления произошла ошибка");
+            }
         } else {
             System.out.println("Задача не найдена");
         }
@@ -314,7 +351,8 @@ public class Main {
         if (!taskManager.getTasks().containsKey(id)) {
             System.out.println("Введён некорректный номер задачи");
         } else {
-            Task task = taskManager.getTask(id);
+            Task task = new Task();
+            task.setId(id);
 
             System.out.println("Введите новое наименование (пусто - оставить без изменений)");
             String newName = scanner.nextLine();
@@ -344,6 +382,12 @@ public class Main {
                 }
                 System.out.println("Статус изменён");
             }
+
+            if (taskManager.updateTask(task)) {
+                System.out.println("Изменения сохранены");
+            } else {
+                System.out.println("Во время изменения произошла ошибка");
+            }
         }
     }
 
@@ -357,13 +401,20 @@ public class Main {
         task.setName(name);
         task.setDescription(description);
 
-        taskManager.addTask(task);
-        System.out.println("Задача добавлена");
+        if (taskManager.addTask(task)) {
+            System.out.println("Задача добавлена");
+        } else {
+            System.out.println("Во время добавления произошла ошибка");
+        }
     }
 
 
     static void clearTasks() {
-        taskManager.clearTasks();
+        if (taskManager.clearTasks()) {
+            System.out.println("Список очищен");
+        } else {
+            System.out.println("Во время очистки списка произошла ошибка");
+        }
     }
 
     static void printTasks() {
@@ -376,8 +427,21 @@ public class Main {
         }
     }
 
+    private static void printDetailTasks() {
+        for (Task task : taskManager.getTasks().values()) {
+            System.out.println("Задача: " + task.toString());
+            for (Epic epic : task.getEpics().values()) {
+                System.out.println("|-> Эпик: " + epic.toString());
+                for (SubTask subTask : epic.getSubTasks().values()) {
+                    System.out.println(" |-> Подзадача: " + subTask.toString());
+                }
+            }
+        }
+    }
+
     static void printMainMenu() {
         System.out.println("Доступные команды:");
+        System.out.println("0 - Вывести подробный список задач");
         System.out.println("1 - Вывести список задач");
         System.out.println("2 - Очистить список задач");
         System.out.println("3 - Добавить новую задачу");

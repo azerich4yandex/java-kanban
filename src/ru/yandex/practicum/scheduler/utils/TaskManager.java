@@ -28,26 +28,36 @@ public class TaskManager {
         return null;
     }
 
-    public void addTask(Task task) {
+    public boolean addTask(Task task) {
         if (!(tasks.containsKey(task.getId())) && task.getId() != null) {
             tasks.put(task.getId(), task);
+            return true;
         }
+        return false;
     }
 
-    public void updateTask(Task task) {
+    public boolean updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), task);
+            return true;
         }
+        return false;
     }
 
-    public void removeTask(Integer id) {
+    public boolean removeTask(Integer id) {
         if (this.tasks != null) {
             this.tasks.remove(id);
+            return true;
         }
+        return false;
     }
 
-    public void clearTasks() {
-        tasks.clear();
+    public boolean clearTasks() {
+        if (tasks != null) {
+            tasks.clear();
+            return true;
+        }
+        return false;
     }
 
     public void setTasks(HashMap<Integer, Task> tasks) {
