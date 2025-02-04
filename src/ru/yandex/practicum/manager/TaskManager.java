@@ -139,13 +139,14 @@ public class TaskManager {
             Epic epic = subtask.getEpic();
             epic.deleteSubtask(subtask);
 
-            epic.calculateStatus();
             subtasks.remove(id);
+            epic.calculateStatus();
         }
     }
 
     public void deleteSubtasks() {
         subtasks.clear();
+
         for (Epic epic : getEpics()) {
             epic.calculateStatus();
         }
