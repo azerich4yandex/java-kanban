@@ -1,4 +1,4 @@
-package ru.yandex.practicum.scheduler.models.enums;
+package ru.yandex.practicum.manager.models.enums;
 
 public enum StatusTypes {
     NEW,
