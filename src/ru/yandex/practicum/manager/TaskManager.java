@@ -10,14 +10,10 @@ import ru.yandex.practicum.manager.models.Task;
 
 public class TaskManager {
 
-    private int id;
+    private int id = 0;
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final Map<Integer, Epic> epics = new HashMap<>();
     private final Map<Integer, Subtask> subtasks = new HashMap<>();
-
-    public TaskManager() {
-        this.id = 0;
-    }
 
     private int getNextId() {
         id++;
@@ -84,9 +80,8 @@ public class TaskManager {
 
     public void deleteEpic(int id) {
         for (Subtask subtask : getEpicSubtasks(id)) {
-            deleteSubtask(subtask.getId());
+            subtasks.remove(subtask.getId());
         }
-
         epics.remove(id);
     }
 
@@ -107,7 +102,12 @@ public class TaskManager {
     }
 
     public List<Subtask> getEpicSubtasks(int epicId) {
-        return getEpic(epicId).getSubtasks();
+        Epic epic = getEpic(epicId);
+        if (epic != null) {
+            return epic.getSubtasks();
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public int addNewSubtask(Subtask subtask) {
@@ -128,6 +128,7 @@ public class TaskManager {
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             subtasks.put(subtask.getId(), subtask);
+            subtask.getEpic().updateSubtask(subtask);
             subtask.getEpic().calculateStatus();
         }
     }
@@ -136,7 +137,7 @@ public class TaskManager {
         Subtask subtask = getSubtask(id);
 
         if (subtask != null) {
-            Epic epic = subtask.getEpic();
+            Epic epic = getEpic(subtask.getEpic().getId());
             epic.deleteSubtask(subtask);
 
             subtasks.remove(id);
@@ -145,10 +146,10 @@ public class TaskManager {
     }
 
     public void deleteSubtasks() {
-        subtasks.clear();
-
         for (Epic epic : getEpics()) {
-            epic.calculateStatus();
+            for (Subtask subtask : epic.getSubtasks()) {
+                deleteSubtask(subtask.getId());
+            }
         }
     }
     //</editor-fold>

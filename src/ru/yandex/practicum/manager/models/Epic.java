@@ -8,8 +8,8 @@ public class Epic extends Task {
 
     private final List<Subtask> subtasks = new ArrayList<>();
 
-    public Epic() {
-        super();
+    public Epic(String name, String description) {
+        super(name, description);
     }
 
     public List<Subtask> getSubtasks() {
@@ -20,6 +20,14 @@ public class Epic extends Task {
         int index = subtasks.indexOf(subtask);
         if (index == -1) {
             subtasks.add(subtask);
+        }
+    }
+
+    public void updateSubtask(Subtask subtask) {
+        int index = subtasks.indexOf(subtask);
+
+        if (index != -1) {
+            subtasks.set(index, subtask);
         }
     }
 

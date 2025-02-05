@@ -17,14 +17,10 @@ public class Main {
     }
 
     private static void doSomeActions() {
-        Task firstTask = new Task();
-        firstTask.setName("Первая задача");
-        firstTask.setDescription("Описание первой задачи");
+        Task firstTask = new Task("Первая задача", "Описание первой задачи");
         int firstTaskId = taskManager.addNewTask(firstTask);
 
-        Task secondTask = new Task();
-        secondTask.setName("Вторая задача");
-        secondTask.setDescription("Описание второй задачи");
+        Task secondTask = new Task("Вторая задача", "Описание второй задачи");
         int secondTaskId = taskManager.addNewTask(secondTask);
 
         for (Task task : taskManager.getTasks()) {
@@ -45,14 +41,10 @@ public class Main {
 
         System.out.println(Stream.generate(() -> "=").limit(10).collect(Collectors.joining()));
 
-        Epic firstEpic = new Epic();
-        firstEpic.setName("Первый эпик");
-        firstEpic.setDescription("Описание первого эпика");
+        Epic firstEpic = new Epic("Первый эпик", "Описание первого эпика");
         int firstEpicId = taskManager.addNewEpic(firstEpic);
 
-        Epic secondEpic = new Epic();
-        secondEpic.setName("Второй эпик");
-        secondEpic.setDescription("Описание второго эпика");
+        Epic secondEpic = new Epic("Второй эпик", "Описание второго эпика");
         int secondEpicId = taskManager.addNewEpic(secondEpic);
 
         for (Epic epic : taskManager.getEpics()) {
@@ -74,14 +66,10 @@ public class Main {
 
         System.out.println(Stream.generate(() -> "=").limit(10).collect(Collectors.joining()));
 
-        Subtask firstSubtask = new Subtask(taskManager.getEpic(firstEpicId));
-        firstSubtask.setName("Первая подзадача");
-        firstSubtask.setDescription("Описание первой подзадачи");
+        Subtask firstSubtask = new Subtask("Первая подзадача","Описание первой подзадачи", taskManager.getEpic(firstEpicId));
         int firstSubtaskId = taskManager.addNewSubtask(firstSubtask);
 
-        Subtask secondSubtask = new Subtask(taskManager.getEpic(firstEpicId));
-        secondSubtask.setName("Вторая подзадача");
-        secondSubtask.setDescription("Описание второй подзадачи");
+        Subtask secondSubtask = new Subtask("Вторая подзадача", "Описание второй подзадачи", taskManager.getEpic(firstEpicId));
         int secondSubtaskId = taskManager.addNewSubtask(secondSubtask);
 
         System.out.println("From taskManager (way 1):");
@@ -105,14 +93,10 @@ public class Main {
         System.out.println(Stream.generate(() -> "-").limit(10).collect(Collectors.joining()));
 
         secondEpic = taskManager.getEpic(secondEpicId);
-        Subtask thirdSubtask = new Subtask(secondEpic);
-        thirdSubtask.setName("Третья подзадача");
-        thirdSubtask.setDescription("Описание третьей подзадачи");
+        Subtask thirdSubtask = new Subtask("Третья подзадача", "Описание третьей подзадачи", secondEpic);
         int thirdSubtaskId = taskManager.addNewSubtask(thirdSubtask);
 
-        Subtask fourthSubtask = new Subtask(secondEpic);
-        fourthSubtask.setName("Четвертая подзадача");
-        fourthSubtask.setDescription("Описание четвертой подзадачи");
+        Subtask fourthSubtask = new Subtask("Четвертая подзадача", "Описание четвертой подзадачи", secondEpic);
         int fourthSubtaskId = taskManager.addNewSubtask(fourthSubtask);
 
         System.out.println(secondEpic.toString());
