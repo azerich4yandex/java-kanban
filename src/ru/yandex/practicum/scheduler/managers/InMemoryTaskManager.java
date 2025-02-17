@@ -1,34 +1,41 @@
-package ru.yandex.practicum.manager;
+package ru.yandex.practicum.scheduler.managers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import ru.yandex.practicum.manager.models.Epic;
-import ru.yandex.practicum.manager.models.Subtask;
-import ru.yandex.practicum.manager.models.Task;
+import ru.yandex.practicum.scheduler.models.Epic;
+import ru.yandex.practicum.scheduler.models.Subtask;
+import ru.yandex.practicum.scheduler.models.Task;
 
-public class TaskManager {
+public class InMemoryTaskManager implements TaskManager {
 
     private int id = 0;
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final Map<Integer, Epic> epics = new HashMap<>();
     private final Map<Integer, Subtask> subtasks = new HashMap<>();
+    private final List<Task> history = new ArrayList<>();
 
-    private int getNextId() {
+    @Override
+    public int getNextId() {
         id++;
         return id;
     }
 
     //<editor-fold desc="Task methods">
+    @Override
     public List<Task> getTasks() {
         return new ArrayList<>(tasks.values());
     }
 
+    @Override
     public Task getTask(int id) {
-        return tasks.get(id);
+        Task task = tasks.get(id);
+        addToHistory(task);
+        return task;
     }
 
+    @Override
     public int addNewTask(Task task) {
         task.setId(getNextId());
         tasks.put(task.getId(), task);
@@ -36,30 +43,38 @@ public class TaskManager {
         return task.getId();
     }
 
+    @Override
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), task);
         }
     }
 
+    @Override
     public void deleteTask(int id) {
         tasks.remove(id);
     }
 
+    @Override
     public void deleteTasks() {
         tasks.clear();
     }
     //</editor-fold>
 
     //<editor-fold desc="Epic methods">
+    @Override
     public List<Epic> getEpics() {
         return new ArrayList<>(epics.values());
     }
 
+    @Override
     public Epic getEpic(int id) {
-        return epics.get(id);
+        Epic epic = epics.get(id);
+        addToHistory(epic);
+        return epic;
     }
 
+    @Override
     public int addNewEpic(Epic epic) {
         epic.setId(getNextId());
         epics.put(epic.getId(), epic);
@@ -67,6 +82,7 @@ public class TaskManager {
         return epic.getId();
     }
 
+    @Override
     public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
             Epic tempEpic = getEpic(epic.getId());
@@ -78,6 +94,7 @@ public class TaskManager {
         }
     }
 
+    @Override
     public void deleteEpic(int id) {
         for (Subtask subtask : getEpicSubtasks(id)) {
             subtasks.remove(subtask.getId());
@@ -85,6 +102,7 @@ public class TaskManager {
         epics.remove(id);
     }
 
+    @Override
     public void deleteEpics() {
         subtasks.clear();
         epics.clear();
@@ -92,14 +110,19 @@ public class TaskManager {
     //</editor-fold>
 
     //<editor-fold desc="Subtask methods">
+    @Override
     public List<Subtask> getSubtasks() {
         return new ArrayList<>(subtasks.values());
     }
 
+    @Override
     public Subtask getSubtask(int id) {
-        return subtasks.get(id);
+        Subtask subtask = subtasks.get(id);
+        addToHistory(subtask);
+        return subtask;
     }
 
+    @Override
     public List<Subtask> getEpicSubtasks(int epicId) {
         Epic epic = getEpic(epicId);
 
@@ -110,6 +133,7 @@ public class TaskManager {
         }
     }
 
+    @Override
     public int addNewSubtask(Subtask subtask) {
         Epic epic = subtask.getEpic();
 
@@ -125,6 +149,7 @@ public class TaskManager {
         return 0;
     }
 
+    @Override
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             subtasks.put(subtask.getId(), subtask);
@@ -135,6 +160,7 @@ public class TaskManager {
         }
     }
 
+    @Override
     public void deleteSubtask(int id) {
         Subtask subtask = getSubtask(id);
 
@@ -147,12 +173,28 @@ public class TaskManager {
         }
     }
 
+    @Override
     public void deleteSubtasks() {
         for (Epic epic : getEpics()) {
             for (Subtask subtask : epic.getSubtasks()) {
                 deleteSubtask(subtask.getId());
             }
         }
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="History methods">
+    @Override
+    public List<Task> getHistory() {
+        return history;
+    }
+
+    @Override
+    public void addToHistory(Task task) {
+        if (history.size() >= 10) {
+            history.remove(1);
+        }
+        history.add(task);
     }
     //</editor-fold>
 }
