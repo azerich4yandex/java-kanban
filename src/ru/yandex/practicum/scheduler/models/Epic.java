@@ -1,8 +1,8 @@
-package ru.yandex.practicum.manager.models;
+package ru.yandex.practicum.scheduler.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import ru.yandex.practicum.manager.models.enums.StatusTypes;
+import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 
 public class Epic extends Task {
 

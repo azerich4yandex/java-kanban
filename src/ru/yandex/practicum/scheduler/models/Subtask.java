@@ -1,4 +1,4 @@
-package ru.yandex.practicum.manager.models;
+package ru.yandex.practicum.scheduler.models;
 
 public class Subtask extends Task {
 
