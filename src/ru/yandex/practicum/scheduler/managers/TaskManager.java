@@ -5,9 +5,10 @@ import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
 
-public interface TaskManager {
+public interface TaskManager extends HistoryManager {
 
     int getNextId();
+    void printAllTasks(TaskManager manager);
 
     //<editor-fold desc="Task methods">
     List<Task> getTasks();
@@ -51,11 +52,5 @@ public interface TaskManager {
     void deleteSubtask(int id);
 
     void deleteSubtasks();
-    //</editor-fold>
-
-    //<editor-fold desc="History methods">
-    void addToHistory(Task task);
-
-    List<Task> getHistory();
     //</editor-fold>
 }
