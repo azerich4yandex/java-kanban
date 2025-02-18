@@ -200,11 +200,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteSubtasks() {
-        for (Epic epic : getEpics()) {
-            for (Subtask subtask : epic.getSubtasks()) {
-                deleteSubtask(subtask.getId());
-            }
-        }
+        subtasks.clear();
     }
     //</editor-fold>
 
