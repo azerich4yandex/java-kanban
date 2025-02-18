@@ -4,47 +4,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import ru.yandex.practicum.scheduler.managers.interfaces.HistoryManager;
+import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
 import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
 
 public class InMemoryTaskManager implements TaskManager {
 
+    private final HistoryManager historyManager;
     private int id = 0;
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final Map<Integer, Epic> epics = new HashMap<>();
     private final Map<Integer, Subtask> subtasks = new HashMap<>();
-    private final List<Task> history = new ArrayList<>();
+
+    public InMemoryTaskManager(HistoryManager historyManager) {
+        this.historyManager = historyManager;
+    }
 
     @Override
     public int getNextId() {
         id++;
         return id;
-    }
-
-    @Override
-    public void printAllTasks(TaskManager manager) {
-        System.out.println("Задачи:");
-        for (Task task : manager.getTasks()) {
-            System.out.println(task);
-        }
-        System.out.println("Эпики:");
-        for (Task epic : manager.getEpics()) {
-            System.out.println(epic);
-
-            for (Task task : manager.getEpicSubtasks(epic.getId())) {
-                System.out.println("--> " + task);
-            }
-        }
-        System.out.println("Подзадачи:");
-        for (Task subtask : manager.getSubtasks()) {
-            System.out.println(subtask);
-        }
-
-        System.out.println("История:");
-        for (Task task : manager.getHistory()) {
-            System.out.println(task);
-        }
     }
 
     //<editor-fold desc="Task methods">
@@ -56,7 +37,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTask(int id) {
         Task task = tasks.get(id);
-        addToHistory(task);
+        historyManager.addToHistory(task);
         return task;
     }
 
@@ -95,7 +76,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpic(int id) {
         Epic epic = epics.get(id);
-        addToHistory(epic);
+        historyManager.addToHistory(epic);
         return epic;
     }
 
@@ -143,7 +124,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask getSubtask(int id) {
         Subtask subtask = subtasks.get(id);
-        addToHistory(subtask);
+        historyManager.addToHistory(subtask);
         return subtask;
     }
 
@@ -201,21 +182,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteSubtasks() {
         subtasks.clear();
-    }
-    //</editor-fold>
-
-    //<editor-fold desc="History methods">
-    @Override
-    public List<Task> getHistory() {
-        return history;
-    }
-
-    @Override
-    public void addToHistory(Task task) {
-        if (history.size() >= 10) {
-            history.remove(1);
-        }
-        history.add(task);
     }
     //</editor-fold>
 }

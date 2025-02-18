@@ -3,7 +3,7 @@ package ru.yandex.practicum.scheduler;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ru.yandex.practicum.scheduler.managers.Managers;
-import ru.yandex.practicum.scheduler.managers.TaskManager;
+import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
 import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;

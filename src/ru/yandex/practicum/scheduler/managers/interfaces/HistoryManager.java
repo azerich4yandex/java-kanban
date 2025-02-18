@@ -1,4 +1,4 @@
-package ru.yandex.practicum.scheduler.managers;
+package ru.yandex.practicum.scheduler.managers.interfaces;
 
 import java.util.List;
 import ru.yandex.practicum.scheduler.models.Task;

@@ -1,14 +1,13 @@
-package ru.yandex.practicum.scheduler.managers;
+package ru.yandex.practicum.scheduler.managers.interfaces;
 
 import java.util.List;
 import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
 
-public interface TaskManager extends HistoryManager {
+public interface TaskManager {
 
     int getNextId();
-    void printAllTasks(TaskManager manager);
 
     //<editor-fold desc="Task methods">
     List<Task> getTasks();
