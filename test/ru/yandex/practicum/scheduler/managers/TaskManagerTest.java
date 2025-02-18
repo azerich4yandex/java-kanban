@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class TaskManagerTest {
 
-    static TaskManager taskManager;
+    private static TaskManager taskManager;
 
     @BeforeAll
     static void init() {
