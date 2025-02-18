@@ -143,7 +143,6 @@ class TaskManagerTest {
 
         subtask = new Subtask("2nd test subtask", "2nd test description", epic1);
         epic1.addNewSubtask(subtask);
-        int subtaskId2 = taskManager.addNewSubtask(subtask);
         taskManager.updateEpic(epic1);
         subtasks.add(subtask);
 

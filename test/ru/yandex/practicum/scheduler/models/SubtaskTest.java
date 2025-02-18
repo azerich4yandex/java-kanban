@@ -15,11 +15,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SubtaskTest {
     private static TaskManager taskManager;
-    private Epic epic1;
-    private Epic epic2;
     private Subtask subtask1;
     private Subtask subtask2;
-    private Subtask subtask3;
 
     @BeforeAll
     static void init() {
@@ -28,14 +25,14 @@ class SubtaskTest {
 
     @BeforeEach
     void createEntities() {
-        epic1 = new Epic("First epic", "First epic description");
-        epic2 = new Epic("Second epic", "Second epic description");
+        Epic epic1 = new Epic("First epic", "First epic description");
+        Epic epic2 = new Epic("Second epic", "Second epic description");
         taskManager.addNewEpic(epic1);
         taskManager.addNewEpic(epic2);
 
         subtask1 = new Subtask("First subtask", "First subtask description", epic1);
         subtask2 = new Subtask("Second subtask", "Second subtask description", epic1);
-        subtask3 = new Subtask("Third subtask", "Third subtask description", epic1);
+        Subtask subtask3 = new Subtask("Third subtask", "Third subtask description", epic1);
         taskManager.addNewSubtask(subtask1);
         taskManager.addNewSubtask(subtask2);
         taskManager.addNewSubtask(subtask3);
