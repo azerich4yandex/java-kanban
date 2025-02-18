@@ -12,6 +12,7 @@ import ru.yandex.practicum.scheduler.managers.TaskManager;
 import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EpicTest {
 
@@ -147,5 +148,33 @@ class EpicTest {
         epic2.deleteSubtask(subtask1);
 
         assertEquals(expected, taskManager.getEpic(epic2.getId()).getSubtasks(), "Списки не совпадают");
+    }
+
+    @DisplayName("Эпики с одинаковым ИД должны совпадать")
+    @Test
+    void shouldBeEqualsWithSameId() {
+        epic1.setDescription("Modified description");
+
+        assertEquals(epic1, taskManager.getEpic(epic1.getId()), "Эпики не совпадают");
+    }
+
+    @DisplayName("Статусы эпиков должны стать NEW после удаления всех подзадач")
+    @Test
+    void shouldBeNewStatusAfterAllSubtaskDeleting() {
+        boolean isNew = false;
+        taskManager.deleteSubtasks();
+
+        for (Epic epic : taskManager.getEpics()) {
+            epic.calculateStatus();
+
+            if (epic.getStatus() != StatusTypes.NEW) {
+                isNew = false;
+                break;
+            } else {
+                isNew = true;
+            }
+        }
+
+        assertTrue(isNew, "Эпики не сменили свой статус после удаления всех подзадач");
     }
 }
