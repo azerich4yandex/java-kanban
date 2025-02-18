@@ -30,7 +30,7 @@ class EpicTest {
     }
 
     @BeforeEach
-    void createEpicsAndTasks() {
+    void createEntities() {
         epic1 = new Epic("First epic", "First epic description");
         epic2 = new Epic("Second epic", "Second epic description");
         taskManager.addNewEpic(epic1);
@@ -45,7 +45,7 @@ class EpicTest {
     }
 
     @AfterEach
-    void clearEpicsAndSubtasks() {
+    void clearEntities() {
         taskManager.deleteEpics();
     }
 
