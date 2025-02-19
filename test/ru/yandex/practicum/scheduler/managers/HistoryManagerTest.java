@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HistoryManagerTest {
 
-    private static HistoryManager historyManager;
-    private static TaskManager taskManager;
+    private HistoryManager historyManager;
+    private TaskManager taskManager;
 
     @BeforeEach
     void createEntities() {
