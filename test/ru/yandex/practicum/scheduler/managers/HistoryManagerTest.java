@@ -2,8 +2,6 @@ package ru.yandex.practicum.scheduler.managers;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +12,6 @@ import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HistoryManagerTest {
 

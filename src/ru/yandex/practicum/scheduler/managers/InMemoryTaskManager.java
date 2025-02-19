@@ -85,8 +85,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private Epic getEpicInternal(int id) {
-        Epic epic = epics.get(id);
-        return epic;
+        return epics.get(id);
     }
 
     @Override
@@ -138,8 +137,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private Subtask getSubtaskInternal(int id) {
-        Subtask subtask = subtasks.get(id);
-        return subtask;
+        return subtasks.get(id);
     }
 
     @Override

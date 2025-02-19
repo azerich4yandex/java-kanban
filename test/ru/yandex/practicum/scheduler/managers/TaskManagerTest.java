@@ -253,14 +253,12 @@ class TaskManagerTest {
     @Test
     void deleteEpic() {
         List<Epic> expected = new ArrayList<>();
-        List<Subtask> subtasks = new ArrayList<>();
 
         Epic epic = new Epic("Epic name", "Epic description");
         Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
         int epicId1 = taskManager.addNewEpic(epic);
         epic.addNewSubtask(subtask);
         taskManager.updateEpic(epic);
-        subtasks.add(subtask);
         expected.add(epic);
 
         epic = new Epic("Second epic name", "Second epic desctiprion");
