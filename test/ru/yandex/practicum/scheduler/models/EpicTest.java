@@ -24,13 +24,10 @@ class EpicTest {
     private Subtask subtask3;
 
 
-    @BeforeAll
-    static void init() {
-        taskManager = Managers.getDefault();
-    }
-
     @BeforeEach
     void createEntities() {
+        taskManager = Managers.getDefault();
+
         epic1 = new Epic("First epic", "First epic description");
         epic2 = new Epic("Second epic", "Second epic description");
         taskManager.addNewEpic(epic1);
@@ -42,11 +39,6 @@ class EpicTest {
         taskManager.addNewSubtask(subtask1);
         taskManager.addNewSubtask(subtask2);
         taskManager.addNewSubtask(subtask3);
-    }
-
-    @AfterEach
-    void clearEntities() {
-        taskManager.deleteEpics();
     }
 
     @DisplayName("Статус пустого эпика должен быть NEW")

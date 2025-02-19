@@ -34,11 +34,6 @@ class SubtaskTest {
         taskManager.addNewSubtask(subtask3);
     }
 
-    @AfterEach
-    void clearEntities() {
-        taskManager.deleteEpics();
-    }
-
 
     @DisplayName("Подзадачи с одинаковым ИД должны совпадать")
     @Test
