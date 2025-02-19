@@ -21,14 +21,11 @@ class HistoryManagerTest {
     private static HistoryManager historyManager;
     private static TaskManager taskManager;
 
-    @BeforeAll
-    static void init() {
-        historyManager = Managers.getDefaultHistory();
-        taskManager = new InMemoryTaskManager(historyManager);
-    }
-
     @BeforeEach
     void createEntities() {
+        historyManager = Managers.getDefaultHistory();
+        taskManager = new InMemoryTaskManager(historyManager);
+
         Task task = new Task("First task", "First task description");
         taskManager.addNewTask(task);
         task = new Task("Second task", "Second task description");
@@ -44,13 +41,6 @@ class HistoryManagerTest {
         epic.addNewSubtask(subtask);
         taskManager.addNewSubtask(subtask);
         taskManager.updateEpic(epic);
-    }
-
-    @AfterEach
-    void clearEntities() {
-        taskManager.deleteTasks();
-        taskManager.deleteSubtasks();
-        taskManager.deleteEpics();
     }
 
     @DisplayName("Операции с менеджером истории")
@@ -71,19 +61,11 @@ class HistoryManagerTest {
 
         List<Task> history = historyManager.getHistory();
 
-        assertEquals(expected.size(), history.size(), "История формируется некорректно");
+        assertEquals(expected, history, "История формируется некорректно");
 
-        boolean isEquals = false;
+        expected = history;
+        history = taskManager.getHistory();
 
-        for (int i = 0; i < history.size() - 1; i++) {
-            if (expected.get(i).equals(history.get(i))) {
-                isEquals = true;
-            } else {
-                isEquals = false;
-                break;
-            }
-        }
-
-        assertTrue(isEquals, "История формируется некорректно");
+        assertEquals(expected, history, "Одинаковые списки полученные разными методами не совпадают");
     }
 }

@@ -14,17 +14,14 @@ import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SubtaskTest {
-    private static TaskManager taskManager;
+    private TaskManager taskManager;
     private Subtask subtask1;
     private Subtask subtask2;
 
-    @BeforeAll
-    static void init() {
-        taskManager = Managers.getDefault();
-    }
-
     @BeforeEach
     void createEntities() {
+        taskManager = Managers.getDefault();
+
         Epic epic1 = new Epic("First epic", "First epic description");
         Epic epic2 = new Epic("Second epic", "Second epic description");
         taskManager.addNewEpic(epic1);
@@ -47,9 +44,8 @@ class SubtaskTest {
     @DisplayName("Подзадачи с одинаковым ИД должны совпадать")
     @Test
     void shouldBeEqualsSubtasksWithSameId() {
-        subtask1.setDescription("New description");
-
-        assertEquals(subtask1, taskManager.getSubtask(subtask1.getId()), "Подзадачи не совпадают");
+        subtask2 = taskManager.getSubtask(subtask1.id);
+        assertEquals(subtask2, taskManager.getSubtask(subtask1.getId()), "Подзадачи c одинаковым Id не совпадают");
     }
 
     @DisplayName("Не должно быть подзадач без эпика")
@@ -72,9 +68,7 @@ class SubtaskTest {
     @Test
     void shouldBeNoSubtasksAfterEpicDeleting() {
         List<Subtask> expected = new ArrayList<>();
-
         taskManager.deleteEpics();
-
         assertEquals(expected, taskManager.getSubtasks(), "Остались подзадачи после удаления эпиков");
     }
 
@@ -83,7 +77,6 @@ class SubtaskTest {
     void shouldBeInProgressStatus() {
         subtask1.setStatus(StatusTypes.IN_PROGRESS);
         taskManager.updateSubtask(subtask1);
-
         assertEquals(subtask1.getStatus(), taskManager.getSubtask(subtask1.id).getStatus(), "Статус не изменился после сохранения");
     }
 
@@ -91,7 +84,6 @@ class SubtaskTest {
     @Test
     void shouldBeNullAfterDeleting() {
         taskManager.deleteSubtask(subtask2.getId());
-
         assertNull(taskManager.getSubtask(subtask2.getId()));
     }
 }

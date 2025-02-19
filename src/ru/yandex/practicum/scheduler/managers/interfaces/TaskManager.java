@@ -7,7 +7,7 @@ import ru.yandex.practicum.scheduler.models.Task;
 
 public interface TaskManager {
 
-    int getNextId();
+    List<Task> getHistory();
 
     //<editor-fold desc="Task methods">
     List<Task> getTasks();

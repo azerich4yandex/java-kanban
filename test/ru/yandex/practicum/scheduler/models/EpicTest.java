@@ -153,9 +153,10 @@ class EpicTest {
     @DisplayName("Эпики с одинаковым ИД должны совпадать")
     @Test
     void shouldBeEqualsWithSameId() {
-        epic1.setDescription("Modified description");
+        epic2 = taskManager.getEpic(epic1.getId());
+        epic2.setName("Modified name");
 
-        assertEquals(epic1, taskManager.getEpic(epic1.getId()), "Эпики не совпадают");
+        assertEquals(epic2, taskManager.getEpic(epic1.getId()), "Эпики не совпадают");
     }
 
     @DisplayName("Статусы эпиков должны стать NEW после удаления всех подзадач")

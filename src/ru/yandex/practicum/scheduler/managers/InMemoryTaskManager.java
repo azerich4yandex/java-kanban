@@ -22,10 +22,14 @@ public class InMemoryTaskManager implements TaskManager {
         this.historyManager = historyManager;
     }
 
-    @Override
     public int getNextId() {
         id++;
         return id;
+    }
+
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
     //<editor-fold desc="Task methods">

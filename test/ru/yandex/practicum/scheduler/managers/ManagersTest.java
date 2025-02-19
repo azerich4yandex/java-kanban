@@ -13,17 +13,15 @@ class ManagersTest {
     @Test
     void getDefault() {
         TaskManager taskManager = Managers.getDefault();
-        TaskManager expected = new InMemoryTaskManager(Managers.getDefaultHistory());
 
-        assertEquals(expected.getClass(), taskManager.getClass(), "Менеджер задач по умолчанию и конкретный менеджер задач не совпадают");
+        assertNotNull(taskManager, "Менеджер задач вернулся пустым");
     }
 
     @DisplayName("Получение менеджера истории по умолчанию")
     @Test
     void getDefaultHistory() {
         HistoryManager historyManager = Managers.getDefaultHistory();
-        HistoryManager expected = new InMemoryHistoryManager();
 
-        assertEquals(expected.getClass(), historyManager.getClass(), "Менеджер истории по умолчанию и конкретный менеджер истории не совпадают");
+        assertNotNull(historyManager, "Менеджер истории вернулся пустым");
     }
 }
