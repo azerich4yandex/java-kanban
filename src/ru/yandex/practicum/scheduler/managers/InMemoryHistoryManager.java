@@ -67,6 +67,7 @@ public class InMemoryHistoryManager implements HistoryManager {
                 // Получаем ссылки последнего узла
                 Node<T> newPrevious = tail; // хвост - это новый предыдущий элемент
                 Node<T> newNode = new Node<>(newPrevious, task, null); // создаём новый элемент
+
                 tail = newNode; // новый хвост - новый созданный элемент
 
                 // Если предыдущий узел не пуст

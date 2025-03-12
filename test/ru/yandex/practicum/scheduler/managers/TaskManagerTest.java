@@ -255,8 +255,10 @@ class TaskManagerTest {
         List<Epic> expected = new ArrayList<>();
 
         Epic epic = new Epic("Epic name", "Epic description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
         int epicId1 = taskManager.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
+        int subtaskId = taskManager.addNewSubtask(subtask);
+        subtask.setId(subtaskId);
         epic.addNewSubtask(subtask);
         taskManager.updateEpic(epic);
         expected.add(epic);

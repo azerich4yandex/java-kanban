@@ -1,149 +1,85 @@
 package ru.yandex.practicum.scheduler;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import ru.yandex.practicum.scheduler.managers.InMemoryTaskManager;
 import ru.yandex.practicum.scheduler.managers.Managers;
+import ru.yandex.practicum.scheduler.managers.interfaces.HistoryManager;
 import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
 import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
-import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 
 public class Main {
 
     private static TaskManager taskManager;
 
     public static void main(String[] args) {
-        taskManager = Managers.getDefault();
-        doSomeActions();
-    }
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        taskManager = new InMemoryTaskManager(historyManager);
 
-    private static void doSomeActions() {
-        Task firstTask = new Task("Первая задача", "Описание первой задачи");
+        // Дополнительное задание:
+        // 1. Создайте две задачи,
+        Task firstTask = new Task("First Task", "First task description");
         int firstTaskId = taskManager.addNewTask(firstTask);
 
-        Task secondTask = new Task("Вторая задача", "Описание второй задачи");
+        Task secondTask = new Task("Second Task", "Second task description");
         int secondTaskId = taskManager.addNewTask(secondTask);
 
-        for (Task task : taskManager.getTasks()) {
-            System.out.println(task.toString());
-        }
-
-        System.out.println(Stream.generate(() -> "-").limit(10).collect(Collectors.joining()));
-
-        firstTask = taskManager.getTask(firstTaskId);
-        firstTask.setStatus(StatusTypes.IN_PROGRESS);
-        taskManager.updateTask(firstTask);
-        secondTask = taskManager.getTask(secondTaskId);
-        secondTask.setStatus(StatusTypes.DONE);
-
-        for (Task task : taskManager.getTasks()) {
-            System.out.println(task.toString());
-        }
-
-        System.out.println(Stream.generate(() -> "=").limit(10).collect(Collectors.joining()));
-
-        Epic firstEpic = new Epic("Первый эпик", "Описание первого эпика");
+        // эпик
+        Epic firstEpic = new Epic("First Epic", "First epic description");
         int firstEpicId = taskManager.addNewEpic(firstEpic);
 
-        Epic secondEpic = new Epic("Второй эпик", "Описание второго эпика");
+        // с тремя подзадачами
+        Subtask firstSubtask = new Subtask("First subtask", "First subtask description", firstEpic);
+        int firstSubtaskId = taskManager.addNewSubtask(firstSubtask);
+        Subtask secondSubtask = new Subtask("Second subtask", "Second subtask description", firstEpic);
+        taskManager.addNewSubtask(secondSubtask);
+        Subtask thirdSubtask = new Subtask("Third subtask", "Third subtask description", firstEpic);
+        taskManager.addNewSubtask(thirdSubtask);
+        taskManager.updateEpic(firstEpic);
+
+        // и эпик без подзадач.
+        Epic secondEpic = new Epic("Second Epic", "Second epic description");
         int secondEpicId = taskManager.addNewEpic(secondEpic);
 
-        for (Epic epic : taskManager.getEpics()) {
-            System.out.println(epic.toString());
-        }
+        // 2. Запросите несколько раз созданных задачи в разном порядке
+        secondTask = taskManager.getTask(secondTaskId);
+        // 3. После каждого запроса выведите историю и убедитесь, что в ней нет повторов
+        System.out.println("New state of history (second task id = " + secondTask.getId() + ")");
+        printHistory();
+        System.out.println("-----");
 
-        System.out.println(Stream.generate(() -> "-").limit(10).collect(Collectors.joining()));
-
-        firstEpic = taskManager.getEpic(firstEpicId);
-        firstEpic.setDescription("Новое описание первого эпика");
-        taskManager.updateEpic(firstEpic);
-        secondEpic = taskManager.getEpic(secondEpicId);
-        secondEpic.setDescription("Новое описание второго эпика");
-        taskManager.updateEpic(secondEpic);
-
-        for (Epic epic : taskManager.getEpics()) {
-            System.out.println(epic.toString());
-        }
-
-        System.out.println(Stream.generate(() -> "=").limit(10).collect(Collectors.joining()));
-
-        Subtask firstSubtask = new Subtask("Первая подзадача","Описание первой подзадачи", taskManager.getEpic(firstEpicId));
-        int firstSubtaskId = taskManager.addNewSubtask(firstSubtask);
-        System.out.println("First subtask id " + firstSubtaskId);
-
-        Subtask secondSubtask = new Subtask("Вторая подзадача", "Описание второй подзадачи", taskManager.getEpic(firstEpicId));
-        int secondSubtaskId = taskManager.addNewSubtask(secondSubtask);
-        System.out.println("Second subtask id: " + secondSubtaskId);
-
-        System.out.println("From taskManager (way 1):");
-        for (Subtask subtask : taskManager.getSubtasks()) {
-            System.out.println(subtask.toString() + "; Epic: " + subtask.getEpic().getId() + "; size: " + subtask.getEpic().getSubtasks().size());
-        }
-
-        System.out.println(Stream.generate(() -> "-").limit(10).collect(Collectors.joining()));
-
-        System.out.println("From taskManager (way 2):");
-        for (Subtask subtask : taskManager.getEpicSubtasks(firstEpicId)) {
-            System.out.println(subtask.toString());
-        }
-
-        firstEpic = taskManager.getEpic(firstEpicId);
-        System.out.println("From epic: " + firstEpic.toString());
-        for (Subtask subtask : firstEpic.getSubtasks()) {
-            System.out.println(subtask.toString());
-        }
-
-        System.out.println(Stream.generate(() -> "-").limit(10).collect(Collectors.joining()));
+        firstTask = taskManager.getTask(firstTaskId);
+        System.out.println("New state of history (first task id = " + firstTask.getId() + ")");
+        printHistory();
+        System.out.println("-----");
 
         secondEpic = taskManager.getEpic(secondEpicId);
-        Subtask thirdSubtask = new Subtask("Третья подзадача", "Описание третьей подзадачи", secondEpic);
-        int thirdSubtaskId = taskManager.addNewSubtask(thirdSubtask);
+        System.out.println("New state of history (second epic id = " + secondEpic.getId() + ")");
+        printHistory();
+        System.out.println("-----");
 
-        Subtask fourthSubtask = new Subtask("Четвертая подзадача", "Описание четвертой подзадачи", secondEpic);
-        int fourthSubtaskId = taskManager.addNewSubtask(fourthSubtask);
+        firstSubtask = taskManager.getSubtask(firstSubtaskId);
+        System.out.println("New state of history (first subtask id = " + firstSubtask.getId() + ")");
+        printHistory();
+        System.out.println("-----");
 
-        System.out.println(secondEpic.toString());
+        // 4. Удалите задачу, которая есть в истории,
+        taskManager.deleteTask(firstTask.getId());
+        // и проверьте, то при печати она не будет выводится
+        System.out.println("New state of history (after deleting first task with id " + firstTaskId + ")");
+        printHistory();
+        System.out.println("-----");
 
-        thirdSubtask = taskManager.getSubtask(thirdSubtaskId);
-        thirdSubtask.setStatus(StatusTypes.IN_PROGRESS);
-        taskManager.updateSubtask(thirdSubtask);
+        firstEpic = taskManager.getEpic(firstEpicId);
+        System.out.println("New state of history (first epic id = " + firstEpic.getId() + ")");
+        printHistory();
+        System.out.println("-----");
 
-        secondEpic.calculateStatus();
-        System.out.println(secondEpic + "; size: " + secondEpic.getSubtasks().size());
-
-        thirdSubtask = taskManager.getSubtask(thirdSubtaskId);
-        thirdSubtask.setStatus(StatusTypes.DONE);
-        taskManager.updateSubtask(thirdSubtask);
-
-        fourthSubtask = taskManager.getSubtask(fourthSubtaskId);
-        fourthSubtask.setStatus(StatusTypes.DONE);
-        taskManager.updateSubtask(fourthSubtask);
-
-        secondEpic.calculateStatus();
-        System.out.println(secondEpic + "; size: " + secondEpic.getSubtasks().size());
-
-        taskManager.deleteSubtask(thirdSubtaskId);
-        taskManager.deleteSubtask(fourthSubtaskId);
-
-        secondEpic.calculateStatus();
-        System.out.println(secondEpic + "; size: " + secondEpic.getSubtasks().size());
-
-        System.out.println(firstEpic + "; size: " + firstEpic.getSubtasks().size());
-        taskManager.deleteSubtasks();
-        System.out.println(firstEpic + "; size: " + firstEpic.getSubtasks().size());
-
-        System.out.println(taskManager.getEpics().size());
-        taskManager.deleteEpic(firstEpicId);
-        System.out.println(taskManager.getEpics().size());
-        taskManager.deleteEpics();
-        System.out.println(taskManager.getEpics().size());
-
-        System.out.println(taskManager.getTasks().size());
-        taskManager.deleteTask(firstTaskId);
-        System.out.println(taskManager.getTasks().size());
-        taskManager.deleteTasks();
-        System.out.println(taskManager.getTasks().size());
+        // 5. Удалите эпик с тремя подзадачами
+        taskManager.deleteEpic(firstEpic.getId());
+        System.out.println("New state of history (after deleting first epic with id " + firstEpicId + ")");
+        printHistory();
+        System.out.println("-----");
 
         printAll();
     }
@@ -160,6 +96,10 @@ public class Main {
             }
         }
 
+        printHistory();
+    }
+
+    static void printHistory() {
         for (Task task : taskManager.getHistory()) {
             System.out.println(task);
         }
