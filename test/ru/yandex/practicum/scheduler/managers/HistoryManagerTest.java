@@ -73,12 +73,17 @@ class HistoryManagerTest {
 
         assertEquals(expected, history, "Одинаковые списки полученные разными методами не совпадают");
 
+        int expectedSize = historyManager.getHistory().size();
+        taskManager.deleteTask(taskId);
+        expectedSize -= 1;
+
+        assertEquals(expectedSize, historyManager.getHistory().size(), "После удаления задачи размер истории некорректный");
 
     }
 
     @DisplayName("Операции с коллекцией HistoricalLinkedList")
     @Test
-    void HistoricalHistoricalLinkedList() {
+    void historicalLinkedListOperations() {
         // Создаём коллекцию необходимого типа данных
         HistoricalLinkedList<Task> result = new HistoricalLinkedList<>();
         // Создаём задачу
