@@ -20,16 +20,20 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void addToHistory(Task task) {
+        // Добавляем в конец истории
         linkLast(task);
     }
 
     @Override
     public void remove(int id) {
-        // получим экземпляр по Id
+        // получим экземпляр узла по Id
         Node node = history.get(id);
 
+        // Если узел существует
         if (node != null) {
+            // Удаляем задачу из истории
             history.remove(node.task.getId());
+            // Удаляем узел
             removeNode(node);
         }
     }
@@ -97,7 +101,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         node.task = null; // Очистим значение узла
     }
 
-    public ArrayList<Task> getTasks() {
+    private ArrayList<Task> getTasks() {
         // Создаём результирующую коллекцию
         ArrayList<Task> result = new ArrayList<>();
 

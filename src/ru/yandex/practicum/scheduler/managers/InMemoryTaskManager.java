@@ -2,6 +2,7 @@ package ru.yandex.practicum.scheduler.managers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import ru.yandex.practicum.scheduler.managers.interfaces.HistoryManager;
@@ -217,13 +218,23 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.remove(subtask.getId());
         }
 
-        // Очистим хранилище подзадач
-        subtasks.clear();
-
-        // Пересчитаем статусы эпиков
+        // Для каждого эпика
         for (Epic epic : getEpics()) {
+            // Создаём итератор по списку подзадач
+            Iterator<Subtask> iterator = epic.getSubtasks().iterator();
+            // Пока в итераторе есть следующее значение
+            while (iterator.hasNext()) {
+                // Вызываем его
+                iterator.next();
+                // и удаляем
+                iterator.remove();
+            }
+            // Пересчитаем статус эпика после удаления подзадач
             epic.calculateStatus();
         }
+
+        // Очистим хранилище подзадач
+        subtasks.clear();
     }
     //</editor-fold>
 }
