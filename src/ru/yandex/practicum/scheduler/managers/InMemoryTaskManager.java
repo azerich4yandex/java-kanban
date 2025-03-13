@@ -191,23 +191,38 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteSubtask(int id) {
+        // Находим подзадачу
         Subtask subtask = getSubtask(id);
 
+        // Если подзадача найдена
         if (subtask != null) {
+            // Получаем родительский эпик
             Epic epic = getEpicInternal(subtask.getEpic().getId());
-            epic.deleteSubtask(subtask);
-
-            subtasks.remove(id);
+            // Удаляем подзадачу из истории
             historyManager.remove(id);
+            // Удаляем подзадачу из эпика
+            epic.deleteSubtask(subtask);
+            // Удаляем подзадачу из хранилища
+            subtasks.remove(id);
+            // Пересчитываем статус эпика
             epic.calculateStatus();
         }
     }
 
     @Override
     public void deleteSubtasks() {
+        // Пройдёмся по всем задачам
         for (Subtask subtask : getSubtasks()) {
-            deleteSubtask(subtask.getId());
+            // Удалим их из истории
             historyManager.remove(subtask.getId());
+        }
+
+        // Очистим хранилище подзадач
+        subtasks.clear();
+
+        // Пересчитаем статусы эпиков
+        for (Epic epic : getEpics()) {
+            epic.calculateStatus();
         }
     }
     //</editor-fold>
