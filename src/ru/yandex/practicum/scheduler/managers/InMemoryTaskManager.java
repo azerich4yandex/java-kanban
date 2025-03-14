@@ -220,15 +220,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         // Для каждого эпика
         for (Epic epic : getEpics()) {
-            // Создаём итератор по списку подзадач
-            Iterator<Subtask> iterator = epic.getSubtasks().iterator();
-            // Пока в итераторе есть следующее значение
-            while (iterator.hasNext()) {
-                // Вызываем его
-                iterator.next();
-                // и удаляем
-                iterator.remove();
-            }
+            // Удаляем подзадачи
+            epic.clearSubtasks();
             // Пересчитаем статус эпика после удаления подзадач
             epic.calculateStatus();
         }
