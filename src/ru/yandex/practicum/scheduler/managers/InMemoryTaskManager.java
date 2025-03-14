@@ -62,12 +62,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteTask(int id) {
+        historyManager.remove(id);
         tasks.remove(id);
     }
 
     @Override
     public void deleteTasks() {
-        tasks.clear();
+        for (Task task : getTasks()) {
+            deleteTask(task.getId());
+        }
     }
     //</editor-fold>
 
@@ -111,15 +114,19 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteEpic(int id) {
         for (Subtask subtask : getEpicSubtasks(id)) {
+            historyManager.remove(subtask.getId());
             subtasks.remove(subtask.getId());
         }
+
+        historyManager.remove(id);
         epics.remove(id);
     }
 
     @Override
     public void deleteEpics() {
-        subtasks.clear();
-        epics.clear();
+        for (Epic epic : getEpics()) {
+            deleteEpic(epic.getId());
+        }
     }
     //</editor-fold>
 
@@ -155,6 +162,10 @@ public class InMemoryTaskManager implements TaskManager {
     public int addNewSubtask(Subtask subtask) {
         Epic epic = subtask.getEpic();
 
+        if (subtask.getId() == null) {
+            subtask.setId(getNextId());
+        }
+
         if (getEpicInternal(epic.getId()) != null) {
             subtask.setId(getNextId());
             epic.addNewSubtask(subtask);
@@ -180,19 +191,41 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteSubtask(int id) {
+        // Находим подзадачу
         Subtask subtask = getSubtask(id);
 
+        // Если подзадача найдена
         if (subtask != null) {
+            // Получаем родительский эпик
             Epic epic = getEpicInternal(subtask.getEpic().getId());
+            // Удаляем подзадачу из истории
+            historyManager.remove(id);
+            // Удаляем подзадачу из эпика
             epic.deleteSubtask(subtask);
-
+            // Удаляем подзадачу из хранилища
             subtasks.remove(id);
+            // Пересчитываем статус эпика
             epic.calculateStatus();
         }
     }
 
     @Override
     public void deleteSubtasks() {
+        // Пройдёмся по всем задачам
+        for (Subtask subtask : getSubtasks()) {
+            // Удалим их из истории
+            historyManager.remove(subtask.getId());
+        }
+
+        // Для каждого эпика
+        for (Epic epic : getEpics()) {
+            // Удаляем подзадачи
+            epic.clearSubtasks();
+            // Пересчитаем статус эпика после удаления подзадач
+            epic.calculateStatus();
+        }
+
+        // Очистим хранилище подзадач
         subtasks.clear();
     }
     //</editor-fold>

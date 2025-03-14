@@ -38,6 +38,10 @@ public class Epic extends Task {
         }
     }
 
+    public void clearSubtasks() {
+        subtasks.clear();
+    }
+
     public void calculateStatus() {
         StatusTypes resultStatus = StatusTypes.IN_PROGRESS;
         int newQuantity = 0;

@@ -17,6 +17,7 @@ class HistoryManagerTest {
 
     private HistoryManager historyManager;
     private TaskManager taskManager;
+    private int taskId;
 
     @BeforeEach
     void createEntities() {
@@ -24,7 +25,7 @@ class HistoryManagerTest {
         taskManager = new InMemoryTaskManager(historyManager);
 
         Task task = new Task("First task", "First task description");
-        taskManager.addNewTask(task);
+        taskId = taskManager.addNewTask(task);
         task = new Task("Second task", "Second task description");
         taskManager.addNewTask(task);
 
@@ -64,5 +65,13 @@ class HistoryManagerTest {
         history = taskManager.getHistory();
 
         assertEquals(expected, history, "Одинаковые списки полученные разными методами не совпадают");
+
+        int expectedSize = historyManager.getHistory().size();
+        taskManager.deleteTask(taskId);
+        expectedSize -= 1;
+
+        assertEquals(expectedSize, historyManager.getHistory().size(),
+                "После удаления задачи размер истории некорректный");
+
     }
 }
