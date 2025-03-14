@@ -40,8 +40,15 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     private void linkLast(Task task) {
         if (task != null) {
-            // Удаляем узел из истории
-            history.remove(task.getId());
+            // Если в истории такой узел уже есть
+            if (history.containsKey(task.getId())) {
+                // Находим его
+                Node node = history.get(task.getId());
+                // Удаляем узел их хранилища
+                history.remove(task.getId());
+                // Удаляем узел
+                removeNode(node);
+            }
 
             // Получаем ссылки последнего узла
             Node newPrevious = tail; // хвост - это новый предыдущий элемент
