@@ -32,6 +32,14 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    protected List<Task> getAllTasks() {
+        List<Task> result = new ArrayList<>();
+        result.addAll(getTasks());
+        result.addAll(getEpics());
+        result.addAll(getSubtasks());
+        return result;
+    }
+
     //<editor-fold desc="Task methods">
     @Override
     public List<Task> getTasks() {
@@ -47,9 +55,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewTask(Task task) {
-        task.setId(getNextId());
+        if (task.getId() == null) {
+            task.setId(getNextId());
+        }
         tasks.put(task.getId(), task);
-
         return task.getId();
     }
 

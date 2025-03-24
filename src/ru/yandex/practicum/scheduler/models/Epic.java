@@ -3,6 +3,7 @@ package ru.yandex.practicum.scheduler.models;
 import java.util.ArrayList;
 import java.util.List;
 import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
+import ru.yandex.practicum.scheduler.models.enums.TaskTypes;
 
 public class Epic extends Task {
 
@@ -10,6 +11,7 @@ public class Epic extends Task {
 
     public Epic(String name, String description) {
         super(name, description);
+        type = TaskTypes.EPIC;
     }
 
     public List<Subtask> getSubtasks() {
