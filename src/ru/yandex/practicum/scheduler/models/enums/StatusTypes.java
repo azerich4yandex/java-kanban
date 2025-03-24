@@ -14,7 +14,7 @@ public enum StatusTypes {
         };
     }
 
-    public StatusTypes fromString(String value) {
+    public static StatusTypes fromString(String value) {
         return switch (value.trim().toUpperCase()) {
             case "NEW" -> StatusTypes.NEW;
             case "IN_PROGRESS" -> StatusTypes.IN_PROGRESS;

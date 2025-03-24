@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.scheduler.exceptions.ManagerSaveException;
 import ru.yandex.practicum.scheduler.managers.interfaces.HistoryManager;
 import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
 import ru.yandex.practicum.scheduler.models.Epic;
@@ -19,6 +20,7 @@ import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileBackedTaskManagerTest {
 
@@ -26,14 +28,14 @@ public class FileBackedTaskManagerTest {
     private Path tempFile;
 
     @BeforeEach
-    void init() {
+    void init() throws ManagerSaveException {
         HistoryManager historyManager = Managers.getDefaultHistory();
 
         try {
             tempFile = File.createTempFile("database", "csv").toPath();
             taskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
         } catch (IOException e) {
-
+            throw new ManagerSaveException();
         }
     }
 
@@ -299,5 +301,44 @@ public class FileBackedTaskManagerTest {
         taskManager.deleteEpics();
         expected.clear();
         assertEquals(expected, taskManager.getEpics(), "Списки эпиков не совпадают после очистки");
+    }
+
+    @DisplayName("Операции с файлами: Сохранение и загрузка")
+    @Test
+    void saveAndLoadOperations() throws ManagerSaveException {
+        Path tempFile;
+
+        try {
+            tempFile = File.createTempFile("database", ".csv").toPath();
+            tempFile.toFile().deleteOnExit();
+        } catch (IOException e) {
+            throw new ManagerSaveException(e);
+        }
+
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        FileBackedTaskManager firstTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
+
+        Task firstTask = new Task("First task name", "First task description");
+        firstTaskManager.addNewTask(firstTask);
+        Epic firstEpic = new Epic("First epic name", "First epic description");
+        firstTaskManager.addNewEpic(firstEpic);
+        Subtask firstSubtask = new Subtask("First subtask name", "First subtask description", firstEpic);
+        firstTaskManager.addNewSubtask(firstSubtask);
+        List<Task> expected = new ArrayList<>(firstTaskManager.getAllTasks());
+
+        FileBackedTaskManager secondTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
+        secondTaskManager.loadFromFile(tempFile.toFile());
+        List<Task> result = new ArrayList<>(secondTaskManager.getAllTasks());
+
+        boolean isContained = true;
+        for (Task task : expected) {
+            if (!result.contains(task)) {
+                isContained = false;
+                break;
+            }
+        }
+
+        assertTrue(isContained, "В ходе загрузки задач из файла возникли ошибки");
+        assertEquals(expected.size(), result.size(), "В ходе сравнения сохраненного и загруженного возникли ошибки");
     }
 }

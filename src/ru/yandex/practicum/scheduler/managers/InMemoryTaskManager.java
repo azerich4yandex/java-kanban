@@ -102,7 +102,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewEpic(Epic epic) {
-        epic.setId(getNextId());
+        if (epic.getId() == null) {
+            epic.setId(getNextId());
+        }
         epics.put(epic.getId(), epic);
 
         return epic.getId();
@@ -176,7 +178,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         if (getEpicInternal(epic.getId()) != null) {
-            subtask.setId(getNextId());
             epic.addNewSubtask(subtask);
             subtasks.put(subtask.getId(), subtask);
             epic.calculateStatus();

@@ -94,7 +94,6 @@ public class Task {
             epicId = subtask.getEpic().getId().toString();
         }
 
-        return id + "," + type.toString() + ",\"" + name + "\"," + status.toString() + ",\"" + description + "\","
-                + epicId;
+        return id + "," + type.toString() + "," + name + "," + status.toString() + "," + description + "," + epicId;
     }
 }
