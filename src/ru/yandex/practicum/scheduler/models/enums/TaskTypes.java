@@ -5,7 +5,6 @@ public enum TaskTypes {
     EPIC,
     SUBTASK;
 
-
     @Override
     public String toString() {
         return switch (this) {
@@ -14,7 +13,7 @@ public enum TaskTypes {
             case SUBTASK -> "SUBTASK";
         };
     }
-    
+
     public static TaskTypes fromString(String value) {
         return switch (value.trim().toUpperCase()) {
             case "TASK" -> TaskTypes.TASK;
