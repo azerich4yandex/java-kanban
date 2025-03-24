@@ -1,9 +1,13 @@
 package ru.yandex.practicum.scheduler.managers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.scheduler.managers.interfaces.HistoryManager;
 import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
+import ru.yandex.practicum.scheduler.models.Task;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,5 +27,22 @@ class ManagersTest {
         HistoryManager historyManager = Managers.getDefaultHistory();
 
         assertNotNull(historyManager, "Менеджер истории вернулся пустым");
+    }
+
+    @DisplayName("Получение менеджера задач для чтения из файла")
+    @Test
+    void getFileBackedManager() {
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        Path tempFile = null;
+        TaskManager taskManager = null;
+        try {
+            tempFile = File.createTempFile("database", "csv").toPath();
+            taskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        assertNotNull(taskManager, "Менеджер задач не создан");
+        tempFile.toFile().deleteOnExit();
     }
 }

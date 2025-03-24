@@ -103,7 +103,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int addNewTask(Task task) {
-        int result = super.addNewTask(task);
+        int result;
+        if (task.getId() != null) {
+            super.updateTask(task);
+            result = task.getId();
+        } else {
+            result = super.addNewTask(task);
+        }
 
         try {
             save();
@@ -149,7 +155,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int addNewEpic(Epic epic) {
-        int result = super.addNewEpic(epic);
+        int result;
+        if (epic.getId() != null) {
+            super.updateEpic(epic);
+            result = epic.getId();
+        } else {
+            result = super.addNewEpic(epic);
+        }
 
         try {
             save();
@@ -195,7 +207,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int addNewSubtask(Subtask subtask) {
-        int result = super.addNewSubtask(subtask);
+        int result;
+        if (subtask.getId() != null) {
+            super.updateSubtask(subtask);
+            result = subtask.getId();
+        } else {
+            result = super.addNewSubtask(subtask);
+        }
 
         try {
             save();

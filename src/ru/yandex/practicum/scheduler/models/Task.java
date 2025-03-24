@@ -90,8 +90,8 @@ public class Task {
         String epicId = "";
 
         if (this.getClass().equals(Subtask.class)) {
-            Epic epic = (Epic) this;
-            epicId = epic.getId().toString();
+            Subtask subtask = (Subtask) this;
+            epicId = subtask.getEpic().getId().toString();
         }
 
         return id + "," + type.toString() + ",\"" + name + "\"," + status.toString() + ",\"" + description + "\","
