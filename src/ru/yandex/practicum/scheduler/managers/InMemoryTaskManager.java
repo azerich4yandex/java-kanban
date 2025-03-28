@@ -12,7 +12,7 @@ import ru.yandex.practicum.scheduler.models.Task;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    private final HistoryManager historyManager;
+    protected final HistoryManager historyManager;
     private int id = 0;
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final Map<Integer, Epic> epics = new HashMap<>();
@@ -22,7 +22,7 @@ public class InMemoryTaskManager implements TaskManager {
         this.historyManager = historyManager;
     }
 
-    public int getNextId() {
+    protected int getNextId() {
         id++;
         return id;
     }
@@ -30,14 +30,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
-    }
-
-    protected List<Task> getAllTasks() {
-        List<Task> result = new ArrayList<>();
-        result.addAll(getTasks());
-        result.addAll(getEpics());
-        result.addAll(getSubtasks());
-        return result;
     }
 
     //<editor-fold desc="Task methods">
@@ -55,9 +47,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewTask(Task task) {
-        if (task.getId() == null) {
-            task.setId(getNextId());
-        }
+        task.setId(getNextId());
         tasks.put(task.getId(), task);
         return task.getId();
     }
@@ -102,11 +92,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewEpic(Epic epic) {
-        if (epic.getId() == null) {
-            epic.setId(getNextId());
-        }
+        epic.setId(getNextId());
         epics.put(epic.getId(), epic);
-
         return epic.getId();
     }
 
@@ -172,10 +159,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public int addNewSubtask(Subtask subtask) {
         Epic epic = subtask.getEpic();
-
-        if (subtask.getId() == null) {
-            subtask.setId(getNextId());
-        }
+        subtask.setId(getNextId());
 
         if (getEpicInternal(epic.getId()) != null) {
             epic.addNewSubtask(subtask);

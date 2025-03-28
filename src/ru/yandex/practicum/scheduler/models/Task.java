@@ -16,7 +16,11 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = StatusTypes.NEW;
-        type = TaskTypes.TASK;
+        this.type = TaskTypes.TASK;
+    }
+
+    public Task() {
+        this.type = TaskTypes.TASK;
     }
 
     public Integer getId() {
@@ -87,13 +91,15 @@ public class Task {
 
     @Override
     public String toString() {
-        String epicId = "";
+        return "Id: " + id + "; Name: " + name + "; Description: " + description + "; Status: " + status.name();
+    }
 
+    public String toCSV() {
+        String epicId = "";
         if (this.getClass().equals(Subtask.class)) {
             Subtask subtask = (Subtask) this;
             epicId = subtask.getEpic().getId().toString();
         }
-
         return id + "," + type.toString() + "," + name + "," + status.toString() + "," + description + "," + epicId;
     }
 }

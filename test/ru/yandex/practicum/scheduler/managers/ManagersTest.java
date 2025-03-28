@@ -28,21 +28,4 @@ class ManagersTest {
 
         assertNotNull(historyManager, "Менеджер истории вернулся пустым");
     }
-
-    @DisplayName("Получение менеджера задач для чтения из файла")
-    @Test
-    void getFileBackedManager() {
-        HistoryManager historyManager = Managers.getDefaultHistory();
-        Path tempFile = null;
-        TaskManager taskManager = null;
-        try {
-            tempFile = File.createTempFile("database", "csv").toPath();
-            taskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        assertNotNull(taskManager, "Менеджер задач не создан");
-        tempFile.toFile().deleteOnExit();
-    }
 }

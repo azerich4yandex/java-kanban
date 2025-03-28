@@ -218,8 +218,9 @@ public class FileBackedTaskManagerTest {
         List<Subtask> subtasks = new ArrayList<>();
 
         Epic epic1 = new Epic("Epic name", "Epic description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic1);
         int epicId1 = taskManager.addNewEpic(epic1);
+        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic1);
+        taskManager.addNewSubtask(subtask);
         epic1.addNewSubtask(subtask);
         taskManager.updateEpic(epic1);
         subtasks.add(subtask);
@@ -234,8 +235,8 @@ public class FileBackedTaskManagerTest {
         assertEquals(expected, taskManager.getEpics(), "Списки эпиков не совпадают");
 
         subtask = new Subtask("2nd test subtask", "2nd test description", epic1);
-        epic1.addNewSubtask(subtask);
         taskManager.addNewSubtask(subtask);
+        epic1.addNewSubtask(subtask);
         taskManager.updateEpic(epic1);
         subtasks.add(subtask);
 
@@ -324,21 +325,60 @@ public class FileBackedTaskManagerTest {
         firstTaskManager.addNewEpic(firstEpic);
         Subtask firstSubtask = new Subtask("First subtask name", "First subtask description", firstEpic);
         firstTaskManager.addNewSubtask(firstSubtask);
-        List<Task> expected = new ArrayList<>(firstTaskManager.getAllTasks());
+        FileBackedTaskManager secondTaskManager = FileBackedTaskManager.loadFromFile(tempFile.toFile());
 
-        FileBackedTaskManager secondTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
-        secondTaskManager.loadFromFile(tempFile.toFile());
-        List<Task> result = new ArrayList<>(secondTaskManager.getAllTasks());
+        List<Task> expectedTasks = new ArrayList<>(firstTaskManager.getTasks());
+        List<Task> resultTasks = new ArrayList<>(secondTaskManager.getTasks());
 
         boolean isContained = true;
-        for (Task task : expected) {
-            if (!result.contains(task)) {
+        for (Task task : expectedTasks) {
+            if (!resultTasks.contains(task)) {
                 isContained = false;
                 break;
+            } else {
+                Task resultTask = resultTasks.get(resultTasks.indexOf(task));
+                if (!(task.toCSV().equals(resultTask.toCSV()))) {
+                    isContained = false;
+                    break;
+                }
             }
         }
-
         assertTrue(isContained, "В ходе загрузки задач из файла возникли ошибки");
-        assertEquals(expected.size(), result.size(), "В ходе сравнения сохраненного и загруженного возникли ошибки");
+        assertEquals(expectedTasks.size(), resultTasks.size(), "Не совпадают загруженный и сохранённый списки задач");
+
+        ArrayList<Epic> expectedEpics = new ArrayList<>(firstTaskManager.getEpics());
+        ArrayList<Epic> resultEpics = new ArrayList<>(secondTaskManager.getEpics());
+        for (Epic epic : expectedEpics) {
+            if (!resultEpics.contains(epic)) {
+                isContained = false;
+                break;
+            } else {
+                Epic resultEpic = resultEpics.get(resultEpics.indexOf(epic));
+                if (!(epic.toCSV().equals(resultEpic.toCSV()))) {
+                    isContained = false;
+                    break;
+                }
+            }
+        }
+        assertTrue(isContained, "В ходе загрузки эпиков из файла возникли ошибки");
+        assertEquals(expectedEpics.size(), resultEpics.size(), "Не совпадают загруженный и сохранённый списки эпиков");
+
+        ArrayList<Subtask> expectedSubtasks = new ArrayList<>(firstTaskManager.getSubtasks());
+        ArrayList<Subtask> resultSubtasks = new ArrayList<>(secondTaskManager.getSubtasks());
+        for (Subtask subtask : expectedSubtasks) {
+            if (!resultSubtasks.contains(subtask)) {
+                isContained = false;
+                break;
+            } else {
+                Subtask resultSubtask = resultSubtasks.get(resultSubtasks.indexOf(subtask));
+                if (!(subtask.toCSV().equals(resultSubtask.toCSV()))) {
+                    isContained = false;
+                    break;
+                }
+            }
+        }
+        assertTrue(isContained, "В ходе загрузки подзадач из файла возникли ошибки");
+        assertEquals(expectedSubtasks.size(), resultSubtasks.size(),
+                "Не совпадают загруженный и сохранённый списки подзадач");
     }
 }
