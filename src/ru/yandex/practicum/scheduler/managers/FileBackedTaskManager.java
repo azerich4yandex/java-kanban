@@ -152,33 +152,22 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         // В зависимости от типа задачи
         switch (type) {
             case TASK -> {
-                // Создаём задачу
-                Task task = new Task(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
+                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
                         paramsArray[2], paramsArray[4]);
-                // Возвращаем созданный объект
-                return task;
             }
             case EPIC -> {
-                // Создаём эпик
-                Epic epic = new Epic(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
+                return new Epic(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
                         paramsArray[2], paramsArray[4]);
-                // Возвращаем созданный объект
-                return epic;
             }
             case SUBTASK -> {
                 // Получаем эпик из хранилища
                 Epic epic = epics.get(Integer.parseInt(paramsArray[5]));
-                // Создаём пустую подзадачу
-                Subtask subtask = new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
+                return new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
                         paramsArray[2], paramsArray[4], epic);
-                // Возвращаем созданный объект
-                return subtask;
-            }
-            case null -> {
-                // В противном случае возвращаем null
-                return null;
             }
         }
+        // В противном случае возвращаем null
+        return null;
     }
 
     @Override

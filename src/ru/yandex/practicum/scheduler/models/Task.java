@@ -67,10 +67,6 @@ public class Task {
         return type;
     }
 
-    public boolean isCompleted() {
-        return !(name.isEmpty() || name.isBlank()) && !(description.isEmpty() || description.isBlank());
-    }
-
     @Override
     public int hashCode() {
         return id.hashCode();
