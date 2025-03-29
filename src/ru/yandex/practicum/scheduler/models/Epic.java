@@ -14,8 +14,8 @@ public class Epic extends Task {
         this.type = TaskTypes.EPIC;
     }
 
-    public Epic() {
-        super();
+    public Epic(Integer id, StatusTypes status, String name, String description) {
+        super(id, status, name, description);
         this.type = TaskTypes.EPIC;
     }
 

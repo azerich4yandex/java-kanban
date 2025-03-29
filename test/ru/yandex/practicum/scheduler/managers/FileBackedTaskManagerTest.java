@@ -319,66 +319,44 @@ public class FileBackedTaskManagerTest {
         HistoryManager historyManager = Managers.getDefaultHistory();
         FileBackedTaskManager firstTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
 
-        Task firstTask = new Task("First task name", "First task description");
-        firstTaskManager.addNewTask(firstTask);
-        Epic firstEpic = new Epic("First epic name", "First epic description");
-        firstTaskManager.addNewEpic(firstEpic);
-        Subtask firstSubtask = new Subtask("First subtask name", "First subtask description", firstEpic);
-        firstTaskManager.addNewSubtask(firstSubtask);
+        Task taskFirstManager = new Task("First task name", "First task description");
+        firstTaskManager.addNewTask(taskFirstManager);
+        Epic epicFirstManager = new Epic("First epic name", "First epic description");
+        firstTaskManager.addNewEpic(epicFirstManager);
+        Subtask subtaskFirstManager = new Subtask("First subtask name", "First subtask description", epicFirstManager);
+        firstTaskManager.addNewSubtask(subtaskFirstManager);
         FileBackedTaskManager secondTaskManager = FileBackedTaskManager.loadFromFile(tempFile.toFile());
 
-        List<Task> expectedTasks = new ArrayList<>(firstTaskManager.getTasks());
-        List<Task> resultTasks = new ArrayList<>(secondTaskManager.getTasks());
-
-        boolean isContained = true;
-        for (Task task : expectedTasks) {
-            if (!resultTasks.contains(task)) {
-                isContained = false;
-                break;
-            } else {
-                Task resultTask = resultTasks.get(resultTasks.indexOf(task));
-                if (!(task.toCSV().equals(resultTask.toCSV()))) {
-                    isContained = false;
-                    break;
-                }
-            }
-        }
-        assertTrue(isContained, "В ходе загрузки задач из файла возникли ошибки");
-        assertEquals(expectedTasks.size(), resultTasks.size(), "Не совпадают загруженный и сохранённый списки задач");
-
-        ArrayList<Epic> expectedEpics = new ArrayList<>(firstTaskManager.getEpics());
-        ArrayList<Epic> resultEpics = new ArrayList<>(secondTaskManager.getEpics());
-        for (Epic epic : expectedEpics) {
-            if (!resultEpics.contains(epic)) {
-                isContained = false;
-                break;
-            } else {
-                Epic resultEpic = resultEpics.get(resultEpics.indexOf(epic));
-                if (!(epic.toCSV().equals(resultEpic.toCSV()))) {
-                    isContained = false;
-                    break;
-                }
-            }
-        }
-        assertTrue(isContained, "В ходе загрузки эпиков из файла возникли ошибки");
-        assertEquals(expectedEpics.size(), resultEpics.size(), "Не совпадают загруженный и сохранённый списки эпиков");
-
-        ArrayList<Subtask> expectedSubtasks = new ArrayList<>(firstTaskManager.getSubtasks());
-        ArrayList<Subtask> resultSubtasks = new ArrayList<>(secondTaskManager.getSubtasks());
-        for (Subtask subtask : expectedSubtasks) {
-            if (!resultSubtasks.contains(subtask)) {
-                isContained = false;
-                break;
-            } else {
-                Subtask resultSubtask = resultSubtasks.get(resultSubtasks.indexOf(subtask));
-                if (!(subtask.toCSV().equals(resultSubtask.toCSV()))) {
-                    isContained = false;
-                    break;
-                }
-            }
-        }
-        assertTrue(isContained, "В ходе загрузки подзадач из файла возникли ошибки");
-        assertEquals(expectedSubtasks.size(), resultSubtasks.size(),
+        assertEquals(firstTaskManager.getTasks().size(), secondTaskManager.getTasks().size(),
+                "Не совпадают загруженный и сохранённый списки задач");
+        assertEquals(firstTaskManager.getEpics().size(), secondTaskManager.getEpics().size(),
+                "Не совпадают загруженный и сохранённый списки эпиков");
+        assertEquals(firstTaskManager.getSubtasks().size(), secondTaskManager.getSubtasks().size(),
                 "Не совпадают загруженный и сохранённый списки подзадач");
+
+        Task taskSecondManager = secondTaskManager.getTask(taskFirstManager.getId());
+        boolean isMatch = taskFirstManager.equals(taskSecondManager) && taskFirstManager.getName()
+                .equals(taskSecondManager.getName()) && taskFirstManager.getDescription()
+                .equals(taskSecondManager.getDescription()) && taskFirstManager.getStatus()
+                .equals(taskSecondManager.getStatus()) && taskFirstManager.getType()
+                .equals(taskSecondManager.getType());
+        assertTrue(isMatch, "Не совпадают загруженная и сохранённая задачи");
+
+        Epic epicSecondManager = secondTaskManager.getEpic(epicFirstManager.getId());
+        isMatch = epicFirstManager.equals(epicSecondManager) && epicFirstManager.getName()
+                .equals(epicSecondManager.getName()) && epicFirstManager.getDescription()
+                .equals(epicSecondManager.getDescription()) && epicFirstManager.getStatus()
+                .equals(epicSecondManager.getStatus()) && epicFirstManager.getSubtasks()
+                .equals(epicSecondManager.getSubtasks()) && epicFirstManager.getType()
+                .equals(epicSecondManager.getType());
+        assertTrue(isMatch, "Не совпадают загруженный и сохранённый эпики");
+
+        Subtask subtaskSecondManager = secondTaskManager.getSubtask(subtaskFirstManager.getId());
+        isMatch = subtaskFirstManager.equals(subtaskSecondManager) && subtaskFirstManager.getName()
+                .equals(subtaskSecondManager.getName()) && subtaskFirstManager.getDescription()
+                .equals(subtaskSecondManager.getDescription()) && subtaskFirstManager.getStatus()
+                .equals(subtaskSecondManager.getStatus()) && subtaskFirstManager.getType()
+                .equals(subtaskSecondManager.getType());
+        assertTrue(isMatch, "Не совпадают загруженная и сохранённая подзадачи");
     }
 }

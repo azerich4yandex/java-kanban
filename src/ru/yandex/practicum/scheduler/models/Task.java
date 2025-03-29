@@ -19,7 +19,11 @@ public class Task {
         this.type = TaskTypes.TASK;
     }
 
-    public Task() {
+    public Task(Integer id, StatusTypes status, String name, String description) {
+        this.id = id;
+        this.status = status;
+        this.name = name;
+        this.description = description;
         this.type = TaskTypes.TASK;
     }
 
