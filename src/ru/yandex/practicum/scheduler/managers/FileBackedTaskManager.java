@@ -117,22 +117,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 switch (task.getType()) {
                     case TASK -> fileTaskManager.tasks.put(task.getId(), task);
                     case EPIC -> fileTaskManager.epics.put(task.getId(), (Epic) task);
-                    case SUBTASK -> {
-                        // Получаем родительский эпик из хранилища
-                        Epic epic = fileTaskManager.epics.get(Integer.parseInt(line.split(",")[5]));
-                        // Создаём подзадачу
-                        Subtask subtask = new Subtask(task.getName(), task.getDescription(), epic);
-                        // Устанавливаем id
-                        subtask.setId(task.getId());
-                        // Устанавливаем статус
-                        subtask.setStatus(task.getStatus());
-                        // Добавляем подзадачу в хранилище
-                        fileTaskManager.subtasks.put(subtask.getId(), subtask);
-                        // Добавляем восстановленную подзадачу к эпику
-                        epic.addNewSubtask(subtask);
-                        // Сохраняем изменения эпика в хранилище
-                        fileTaskManager.epics.put(epic.getId(), epic);
-                    }
+                    case SUBTASK -> fileTaskManager.subtasks.put(task.getId(), (Subtask) task);
                 }
             }
         } catch (IOException e) {
@@ -152,18 +137,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         // В зависимости от типа задачи
         switch (type) {
             case TASK -> {
-                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
-                        paramsArray[2], paramsArray[4]);
+                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]), paramsArray[2],
+                        paramsArray[4]);
             }
             case EPIC -> {
-                return new Epic(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
-                        paramsArray[2], paramsArray[4]);
+                return new Epic(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]), paramsArray[2],
+                        paramsArray[4]);
             }
             case SUBTASK -> {
                 // Получаем эпик из хранилища
                 Epic epic = epics.get(Integer.parseInt(paramsArray[5]));
-                return new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.fromString(paramsArray[3]),
+                Subtask subtask = new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
                         paramsArray[2], paramsArray[4], epic);
+                epic.addNewSubtask(subtask);
+                return subtask;
             }
         }
         // В противном случае возвращаем null

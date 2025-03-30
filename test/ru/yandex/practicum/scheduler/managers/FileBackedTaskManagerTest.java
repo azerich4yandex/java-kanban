@@ -20,7 +20,6 @@ import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileBackedTaskManagerTest {
 
@@ -33,15 +32,11 @@ public class FileBackedTaskManagerTest {
 
         try {
             tempFile = File.createTempFile("database", "csv").toPath();
+            tempFile.toFile().deleteOnExit();
             taskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
         } catch (IOException e) {
             throw new ManagerSaveException();
         }
-    }
-
-    @AfterEach
-    void onExit() {
-        tempFile.toFile().deleteOnExit();
     }
 
     @DisplayName("Операции с Task: Добавление")
@@ -335,28 +330,38 @@ public class FileBackedTaskManagerTest {
                 "Не совпадают загруженный и сохранённый списки подзадач");
 
         Task taskSecondManager = secondTaskManager.getTask(taskFirstManager.getId());
-        boolean isMatch = taskFirstManager.equals(taskSecondManager) && taskFirstManager.getName()
-                .equals(taskSecondManager.getName()) && taskFirstManager.getDescription()
-                .equals(taskSecondManager.getDescription()) && taskFirstManager.getStatus()
-                .equals(taskSecondManager.getStatus()) && taskFirstManager.getType()
-                .equals(taskSecondManager.getType());
-        assertTrue(isMatch, "Не совпадают загруженная и сохранённая задачи");
+        assertEquals(taskFirstManager, taskSecondManager, "Задачи: Не совпадают значения поля id");
+        assertEquals(taskFirstManager.getName(), taskSecondManager.getName(),
+                "Задачи: Не совпадают значения поля name");
+        assertEquals(taskFirstManager.getType(), taskSecondManager.getType(),
+                "Задачи: Не совпадают значения поля type");
+        assertEquals(taskFirstManager.getDescription(), taskSecondManager.getDescription(),
+                "Задачи: Не совпадают значения поля description");
+        assertEquals(taskFirstManager.getStatus(), taskSecondManager.getStatus(),
+                "Задачи: Не совпадают значения поля status");
 
         Epic epicSecondManager = secondTaskManager.getEpic(epicFirstManager.getId());
-        isMatch = epicFirstManager.equals(epicSecondManager) && epicFirstManager.getName()
-                .equals(epicSecondManager.getName()) && epicFirstManager.getDescription()
-                .equals(epicSecondManager.getDescription()) && epicFirstManager.getStatus()
-                .equals(epicSecondManager.getStatus()) && epicFirstManager.getSubtasks()
-                .equals(epicSecondManager.getSubtasks()) && epicFirstManager.getType()
-                .equals(epicSecondManager.getType());
-        assertTrue(isMatch, "Не совпадают загруженный и сохранённый эпики");
+        assertEquals(epicFirstManager, epicSecondManager, "Эпики: Не совпадают значения поля id");
+        assertEquals(epicFirstManager.getName(), epicSecondManager.getName(), "Эпики: Не совпадают значения поля name");
+        assertEquals(epicFirstManager.getType(), epicSecondManager.getType(), "Эпики: Не совпадают значения поля type");
+        assertEquals(epicFirstManager.getDescription(), epicSecondManager.getDescription(),
+                "Эпики: Не совпадают значения поля description");
+        assertEquals(epicFirstManager.getStatus(), epicSecondManager.getStatus(),
+                "Эпики: Не совпадают значения поля status");
+        assertEquals(epicFirstManager.getSubtasks(), epicSecondManager.getSubtasks(),
+                "Эпики: Не совпадают списки подзадач");
 
         Subtask subtaskSecondManager = secondTaskManager.getSubtask(subtaskFirstManager.getId());
-        isMatch = subtaskFirstManager.equals(subtaskSecondManager) && subtaskFirstManager.getName()
-                .equals(subtaskSecondManager.getName()) && subtaskFirstManager.getDescription()
-                .equals(subtaskSecondManager.getDescription()) && subtaskFirstManager.getStatus()
-                .equals(subtaskSecondManager.getStatus()) && subtaskFirstManager.getType()
-                .equals(subtaskSecondManager.getType());
-        assertTrue(isMatch, "Не совпадают загруженная и сохранённая подзадачи");
+        assertEquals(subtaskFirstManager, subtaskSecondManager, "Подзадачи: Не совпадают значения поля id");
+        assertEquals(subtaskFirstManager.getName(), subtaskSecondManager.getName(),
+                "Подзадачи: Не совпадают значения поля name");
+        assertEquals(subtaskFirstManager.getType(), subtaskSecondManager.getType(),
+                "Подзадачи: Не совпадают значения поля type");
+        assertEquals(subtaskFirstManager.getDescription(), subtaskSecondManager.getDescription(),
+                "Подзадачи: Не совпадают значения поля description");
+        assertEquals(subtaskFirstManager.getStatus(), subtaskSecondManager.getStatus(),
+                "Подзадачи: Не совпадают значения поля status");
+        assertEquals(subtaskFirstManager.getEpic(), subtaskSecondManager.getEpic(),
+                "Подзадачи: Не совпадают родительские эпики");
     }
 }
