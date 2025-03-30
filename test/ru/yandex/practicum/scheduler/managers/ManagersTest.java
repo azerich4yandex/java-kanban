@@ -1,9 +1,13 @@
 package ru.yandex.practicum.scheduler.managers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.scheduler.managers.interfaces.HistoryManager;
 import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
+import ru.yandex.practicum.scheduler.models.Task;
 
 import static org.junit.jupiter.api.Assertions.*;
 

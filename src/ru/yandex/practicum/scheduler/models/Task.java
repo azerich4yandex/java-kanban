@@ -2,17 +2,29 @@ package ru.yandex.practicum.scheduler.models;
 
 import java.util.Objects;
 import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
+import ru.yandex.practicum.scheduler.models.enums.TaskTypes;
 
 public class Task {
+
     protected Integer id;
     protected StatusTypes status;
     protected String name;
     protected String description;
+    protected TaskTypes type;
 
     public Task(String name, String description) {
         this.name = name;
         this.description = description;
         this.status = StatusTypes.NEW;
+        this.type = TaskTypes.TASK;
+    }
+
+    public Task(Integer id, StatusTypes status, String name, String description) {
+        this.id = id;
+        this.status = status;
+        this.name = name;
+        this.description = description;
+        this.type = TaskTypes.TASK;
     }
 
     public Integer getId() {
@@ -47,6 +59,14 @@ public class Task {
         this.description = description;
     }
 
+    public void setType(TaskTypes type) {
+        this.type = type;
+    }
+
+    public TaskTypes getType() {
+        return type;
+    }
+
     @Override
     public int hashCode() {
         return id.hashCode();
@@ -64,7 +84,7 @@ public class Task {
             return false;
         }
 
-        Task that = (Task)obj;
+        Task that = (Task) obj;
 
         return Objects.equals(this.id, that.id);
     }
@@ -72,5 +92,14 @@ public class Task {
     @Override
     public String toString() {
         return "Id: " + id + "; Name: " + name + "; Description: " + description + "; Status: " + status.name();
+    }
+
+    public String toCSV() {
+        String epicId = "";
+        if (this.getClass().equals(Subtask.class)) {
+            Subtask subtask = (Subtask) this;
+            epicId = subtask.getEpic().getId().toString();
+        }
+        return id + "," + type.toString() + "," + name + "," + status.toString() + "," + description + "," + epicId;
     }
 }
