@@ -1,5 +1,7 @@
 package ru.yandex.practicum.scheduler.models;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +33,20 @@ class EpicTest {
         taskManager.addNewEpic(epic1);
         taskManager.addNewEpic(epic2);
 
+        LocalDateTime startTime = LocalDateTime.now();
+        Duration duration = Duration.ofMinutes(5);
+
         subtask1 = new Subtask("First subtask", "First subtask description", epic1);
+        subtask1.setStartTime(startTime);
+        subtask1.setDuration(duration);
         subtask2 = new Subtask("Second subtask", "Second subtask description", epic1);
+        startTime = startTime.plus(duration.plusMinutes(2));
+        subtask2.setStartTime(startTime);
+        subtask2.setDuration(duration);
         subtask3 = new Subtask("Third subtask", "Third subtask description", epic1);
+        startTime = startTime.plus(duration.plusMinutes(2));
+        subtask3.setStartTime(startTime);
+        subtask3.setDuration(duration);
         taskManager.addNewSubtask(subtask1);
         taskManager.addNewSubtask(subtask2);
         taskManager.addNewSubtask(subtask3);
@@ -62,7 +75,22 @@ class EpicTest {
 
         subtask1.setStatus(StatusTypes.DONE);
         taskManager.updateSubtask(subtask1);
-        epic1.calculateStatus();
+        // Пересчитаем поля эпика
+        epic1.calculateFields();
+
+        assertEquals(expected, taskManager.getEpic(epic1.getId()).getStatus(), "Неправильный статус Эпика");
+    }
+
+    @DisplayName("Статус непустого эпика должен быть IN_PROGRESS, если все его задачи IN_PROGRESS")
+    @Test
+    void shouldInProgressStatusWithAllInProgressSubtask() {
+        StatusTypes expected = StatusTypes.IN_PROGRESS;
+        subtask1.setStatus(StatusTypes.IN_PROGRESS);
+        taskManager.updateSubtask(subtask1);
+        subtask2.setStatus(StatusTypes.IN_PROGRESS);
+        taskManager.updateSubtask(subtask2);
+        subtask3.setStatus(StatusTypes.IN_PROGRESS);
+        taskManager.updateSubtask(subtask3);
 
         assertEquals(expected, taskManager.getEpic(epic1.getId()).getStatus(), "Неправильный статус Эпика");
     }
@@ -99,6 +127,8 @@ class EpicTest {
     @Test
     void addNewSubtask() {
         Subtask subtask = new Subtask("New subtask", "New subtask description", epic2);
+        subtask.setStartTime(LocalDateTime.now());
+        subtask.setDuration(Duration.ofMinutes(5));
         epic2.addNewSubtask(subtask);
         taskManager.addNewSubtask(subtask);
 
@@ -156,7 +186,8 @@ class EpicTest {
         taskManager.deleteSubtasks();
 
         for (Epic epic : taskManager.getEpics()) {
-            epic.calculateStatus();
+            // Пересчитаем поля эпика
+            epic.calculateFields();
 
             if (epic.getStatus() != StatusTypes.NEW) {
                 isNew = false;

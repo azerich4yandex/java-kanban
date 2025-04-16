@@ -7,6 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import ru.yandex.practicum.scheduler.exceptions.ManagerSaveException;
@@ -109,9 +112,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
                 // Создаём объект из строки
                 Task task = fileTaskManager.fromString(line);
-                // Сравниваем полученный id и счётчик
-                if (task.getId() > fileTaskManager.id) {
-                    fileTaskManager.id = task.getId();
+                // Сравниваем полученный rowId и счётчик
+                if (task.getId() > fileTaskManager.generatedId) {
+                    fileTaskManager.generatedId = task.getId();
                 }
                 // В зависимости от типа объекта добавляем значение в хранилище
                 switch (task.getType()) {
@@ -133,12 +136,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String[] paramsArray = line.split(",");
         // Получаем тип сущности
         TaskTypes type = TaskTypes.valueOf(paramsArray[1]);
+        // Получаем дату начала или null
+        LocalDateTime startTime =
+                paramsArray[6].isBlank() ? null : LocalDateTime.parse(paramsArray[6], Task.getFormatter());
+        // Получаем длительность или null
+        Duration duration =
+                paramsArray[7].isBlank() ? null : Duration.of(Integer.parseInt(paramsArray[7]), ChronoUnit.MINUTES);
 
         // В зависимости от типа задачи
         switch (type) {
             case TASK -> {
-                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]), paramsArray[2],
-                        paramsArray[4]);
+                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
+                        paramsArray[2], paramsArray[4], startTime, duration);
             }
             case EPIC -> {
                 return new Epic(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]), paramsArray[2],
@@ -148,8 +157,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 // Получаем эпик из хранилища
                 Epic epic = epics.get(Integer.parseInt(paramsArray[5]));
                 Subtask subtask = new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
-                        paramsArray[2], paramsArray[4], epic);
+                        paramsArray[2], paramsArray[4], startTime, duration, epic);
                 epic.addNewSubtask(subtask);
+                // Пересчитываем поля эпика
+                epic.calculateFields();
                 return subtask;
             }
         }
@@ -179,9 +190,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void deleteTasks() {
-        for (Task task : tasks.values()) {
-            deleteTask(task.getId());
-        }
+        super.deleteTasks();
+        save();
     }
 
     @Override
