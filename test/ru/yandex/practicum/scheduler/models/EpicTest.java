@@ -126,9 +126,8 @@ class EpicTest {
     @DisplayName("Созданная и сохранённая подзадачи в эпике должны совпадать")
     @Test
     void addNewSubtask() {
-        Subtask subtask = new Subtask("New subtask", "New subtask description", epic2);
-        subtask.setStartTime(LocalDateTime.now());
-        subtask.setDuration(Duration.ofMinutes(5));
+        Subtask subtask = new Subtask("New subtask", "New subtask description", subtask3.getEndTime().plusMinutes(1),
+                subtask3.getDuration(), epic2);
         epic2.addNewSubtask(subtask);
         taskManager.addNewSubtask(subtask);
 

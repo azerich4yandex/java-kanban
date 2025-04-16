@@ -35,7 +35,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getTasks() {
-        return tasks.values().stream().toList();
+        return new ArrayList<>(tasks.values());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class InMemoryTaskManager implements TaskManager {
         return prioritizedTasks.stream().toList();
     }
 
-    protected boolean checkIntersectionByTime(Task firstTask, Task secondTask) {
+    private boolean checkIntersectionByTimeBetweenTwoTasks(Task firstTask, Task secondTask) {
         // Проверяем пересечение времени старта и окончания задач.
         // Если время начала или окончания обеих задач пустые
         if (firstTask.getStartTime() == null || firstTask.getEndTime() == null || secondTask.getStartTime() == null
@@ -57,16 +57,18 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private void addPrioritizedTask(Task task) {
+    protected boolean checkIntersectionByTimeBetweenTaskAndStorage(Task task) {
+        return getPrioritizedTasks().stream()
+                .filter(existinfTask -> !existinfTask.equals(task))
+                .anyMatch(existingTask -> checkIntersectionByTimeBetweenTwoTasks(task, existingTask));
+    }
+
+    protected void addPrioritizedTask(Task task) {
         // Добавляем задачу и список приоритетов,
         // если время начала и длительность заполнены.
         if (task.getStartTime() != null && task.getDuration() != null) {
             // Проверяем пересечение с другими задачами
-            boolean hasIntersections = tasks.values().stream()
-                    .filter(existingTask -> !existingTask.equals(task))
-                    .anyMatch(existingTask -> checkIntersectionByTime(task, existingTask));
-
-            if (!hasIntersections) {
+            if (!checkIntersectionByTimeBetweenTaskAndStorage(task)) {
                 // и если задача не пересекается с другими.
                 prioritizedTasks.add(task);
             } else {
@@ -79,7 +81,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private void deletePrioritizedTask(Task task) {
+    protected void deletePrioritizedTask(Task task) {
         // Удаляем задачу из списка приоритетов
         prioritizedTasks.remove(task);
     }
@@ -93,25 +95,41 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewTask(Task task) {
-        task.setId(getNextId());
-        // Добавляем задачу в список приоритетов
-        addPrioritizedTask(task);
-        // и в хранилище.
-        tasks.put(task.getId(), task);
-        // Возвращаем ИД добавленной задачи
-        return task.getId();
+        if (!checkIntersectionByTimeBetweenTaskAndStorage(task)) {
+            task.setId(getNextId());
+            // Добавляем задачу в список приоритетов
+            addPrioritizedTask(task);
+            // и в хранилище.
+            tasks.put(task.getId(), task);
+            // Возвращаем ИД добавленной задачи
+            return task.getId();
+        } else {
+            throw new IllegalArgumentException("Задача пересекается с другой по времени выполнения");
+        }
     }
 
     @Override
     public void updateTask(Task task) {
-        // Удаляем задачу из списка приоритетов если она есть,
-        // чтобы не искать лишний раз её в списке приоритетов.
-        deletePrioritizedTask(task);
-        // Снова добавляем задачу в список приоритетов.
-        addPrioritizedTask(task);
-        // Обновляем задачу, если она уже есть в хранилище.
-        if (tasks.containsKey(task.getId())) {
-            tasks.put(task.getId(), task);
+        // Проверяем задачу на заполненность.
+        if (task != null) {
+            // Проверяем задачу на пересечение.
+            if (!checkIntersectionByTimeBetweenTaskAndStorage(task)) {
+                // Удаляем задачу из списка приоритетов если она есть,
+                // чтобы не искать лишний раз её в списке приоритетов.
+                deletePrioritizedTask(task);
+                // Снова добавляем задачу в список приоритетов.
+                addPrioritizedTask(task);
+                // Обновляем задачу, если она уже есть в хранилище.
+                if (tasks.containsKey(task.getId())) {
+                    tasks.put(task.getId(), task);
+                }
+            } else {
+                // Иначе выбрасываем исключение
+                throw new IllegalArgumentException("Задача пересекается с другой по времени выполнения");
+            }
+        } else {
+            // Иначе выбрасываем исключение
+            throw new IllegalArgumentException("Передана пустая задача");
         }
     }
 
@@ -171,12 +189,19 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteEpic(int id) {
-        for (Subtask subtask : getEpicSubtasks(id)) {
+        // Получаем эпик
+        Epic epic = epics.get(id);
+        for (Subtask subtask : epic.getSubtasks()) {
+            // Удаляем дочерние подзадачи из списка приоритетов,
+            deletePrioritizedTask(subtask);
+            // из истории обращений
             historyManager.remove(subtask.getId());
+            // и из хранилища
             subtasks.remove(subtask.getId());
         }
-
+        // Удаляем эпик из истории
         historyManager.remove(id);
+        // и из хранилища
         epics.remove(id);
     }
 
@@ -216,65 +241,81 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewSubtask(Subtask subtask) {
-        // Получаем эпик.
-        Epic epic = subtask.getEpic();
-        // Устанавливаем ИД подзадачи
-        subtask.setId(getNextId());
+        if (subtask != null) {
+            if (!checkIntersectionByTimeBetweenTaskAndStorage(subtask)) {
+                // Получаем эпик.
+                Epic epic = subtask.getEpic();
+                // Устанавливаем ИД подзадачи
+                subtask.setId(getNextId());
 
-        // Если ИД полученного эпика не null,
-        if (getEpicInternal(epic.getId()) != null) {
-            // то добавляем подзадачу к эпику,
-            epic.addNewSubtask(subtask);
-            // добавляем подзадачу в список приоритетов,
-            addPrioritizedTask(subtask);
-            // добавляем подзадачу в хранилище,
-            subtasks.put(subtask.getId(), subtask);
-            // и пересчитываем поля эпика.
-            epic.calculateFields();
-            // Возвращаем ИД подзадачи
-            return subtask.getId();
+                // Если ИД полученного эпика не null,
+                if (getEpicInternal(epic.getId()) != null) {
+                    // то добавляем подзадачу к эпику,
+                    epic.addNewSubtask(subtask);
+                    // добавляем подзадачу в список приоритетов,
+                    addPrioritizedTask(subtask);
+                    // добавляем подзадачу в хранилище,
+                    subtasks.put(subtask.getId(), subtask);
+                    // и пересчитываем поля эпика.
+                    epic.calculateFields();
+                    // Возвращаем ИД подзадачи
+                    return subtask.getId();
+                } else {
+                    // Иначе возвращаем 0
+                    throw new IllegalArgumentException("Эпик с id " + epic.getId() + " не найден в хранилище");
+                }
+            } else {
+                throw new IllegalArgumentException("Задача пересекается с другой по времени выполнения");
+            }
         } else {
-            // Иначе возвращаем 0
-            throw new IllegalArgumentException("Эпик с id " + epic.getId() + " не найден в хранилище");
+            throw new IllegalArgumentException("Передана пустая подзадача");
         }
     }
 
     @Override
     public void updateSubtask(Subtask subtask) {
-        // Если подзадача есть в хранилище,
-        if (subtasks.containsKey(subtask.getId())) {
-            // то обновляем подзадачу,
-            subtasks.put(subtask.getId(), subtask);
-            // получаем эпик,
-            Epic epic = getEpicInternal(subtask.getEpic().getId());
-            // обновляем подзадачу в эпике
-            epic.updateSubtask(subtask);
-            // удаляем подзадачу из списка приоритетов, если она есть
-            deletePrioritizedTask(subtask);
-            // и добавляем в список приоритетов снова.
-            addPrioritizedTask(subtask);
-            // Пересчитываем поля эпика
-            epic.calculateFields();
+        if (subtask != null) {
+            if (!checkIntersectionByTimeBetweenTaskAndStorage(subtask)) {
+                // Если подзадача есть в хранилище,
+                if (subtasks.containsKey(subtask.getId())) {
+                    // то обновляем подзадачу,
+                    subtasks.put(subtask.getId(), subtask);
+                    // получаем эпик,
+                    Epic epic = getEpicInternal(subtask.getEpic().getId());
+                    // обновляем подзадачу в эпике
+                    epic.updateSubtask(subtask);
+                    // удаляем подзадачу из списка приоритетов, если она есть
+                    deletePrioritizedTask(subtask);
+                    // и добавляем в список приоритетов снова.
+                    addPrioritizedTask(subtask);
+                    // Пересчитываем поля эпика
+                    epic.calculateFields();
+                }
+            } else {
+                throw new IllegalArgumentException("Задача пересекается по времени выполнения");
+            }
+        } else {
+            throw new IllegalArgumentException("Передана пустая подзадача");
         }
     }
 
     @Override
     public void deleteSubtask(int id) {
         // Находим подзадачу
-        Subtask subtask = getSubtask(id);
+        Subtask subtask = subtasks.get(id);
 
         // Если подзадача найдена
         if (subtask != null) {
             // Получаем родительский эпик.
             Epic epic = getEpicInternal(subtask.getEpic().getId());
+            // Удаляем подзадачу из хранилища.
+            subtasks.remove(id);
             // Удаляем подзадачу из списка приоритетов, если она есть.
             deletePrioritizedTask(subtask);
             // Удаляем подзадачу из истории.
             historyManager.remove(id);
             // Удаляем подзадачу из эпика.
             epic.deleteSubtask(subtask);
-            // Удаляем подзадачу из хранилища.
-            subtasks.remove(id);
             // Пересчитываем поля эпика
             epic.calculateFields();
         }

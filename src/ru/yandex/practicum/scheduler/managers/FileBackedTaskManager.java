@@ -22,7 +22,7 @@ import ru.yandex.practicum.scheduler.models.enums.TaskTypes;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-    private static final String FILE_HEADER = "ID,TYPE,NAME,STATUS,DESCRIPTION,EPIC";
+    private static final String FILE_HEADER = "ID,TYPE,NAME,STATUS,DESCRIPTION,EPIC,START_TIME,DURATION";
     private final File file;
 
     public FileBackedTaskManager(HistoryManager historyManager, File file) {
@@ -118,9 +118,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
                 // В зависимости от типа объекта добавляем значение в хранилище
                 switch (task.getType()) {
-                    case TASK -> fileTaskManager.tasks.put(task.getId(), task);
+                    case TASK -> {
+                        // Добавляем задачу в список приоритетов
+                        fileTaskManager.addPrioritizedTask(task);
+                        // Добавляем задачу в хранилище
+                        fileTaskManager.tasks.put(task.getId(), task);
+                    }
                     case EPIC -> fileTaskManager.epics.put(task.getId(), (Epic) task);
-                    case SUBTASK -> fileTaskManager.subtasks.put(task.getId(), (Subtask) task);
+                    case SUBTASK -> {
+                        // Добавляем подзадачу в список приоритетов
+                        fileTaskManager.addPrioritizedTask(task);
+                        // Добавляем подзадачу в хранилище
+                        fileTaskManager.subtasks.put(task.getId(), (Subtask) task);
+                    }
                 }
             }
         } catch (IOException e) {
