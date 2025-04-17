@@ -7,6 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import ru.yandex.practicum.scheduler.exceptions.ManagerSaveException;
@@ -19,7 +22,7 @@ import ru.yandex.practicum.scheduler.models.enums.TaskTypes;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-    private static final String FILE_HEADER = "ID,TYPE,NAME,STATUS,DESCRIPTION,EPIC";
+    private static final String FILE_HEADER = "ID,TYPE,NAME,STATUS,DESCRIPTION,EPIC,START_TIME,DURATION";
     private final File file;
 
     public FileBackedTaskManager(HistoryManager historyManager, File file) {
@@ -40,11 +43,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         HistoryManager historyManager = Managers.getDefaultHistory();
         FileBackedTaskManager firstTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
 
-        Task firstTask = new Task("First task name", "First task description");
+        Task firstTask = new Task("First task name", "First task description", LocalDateTime.now(),
+                Duration.ofMinutes(10));
         firstTaskManager.addNewTask(firstTask);
         Epic firstEpic = new Epic("First epic name", "First epic description");
         firstTaskManager.addNewEpic(firstEpic);
-        Subtask firstSubtask = new Subtask("First subtask name", "First subtask description", firstEpic);
+        Subtask firstSubtask = new Subtask("First subtask name", "First subtask description",
+                firstTask.getEndTime().plusMinutes(1), firstTask.getDuration(), firstEpic);
         firstTaskManager.addNewSubtask(firstSubtask);
         List<Task> expected = new ArrayList<>(firstTaskManager.getAllTasks());
 
@@ -109,15 +114,25 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
                 // Создаём объект из строки
                 Task task = fileTaskManager.fromString(line);
-                // Сравниваем полученный id и счётчик
-                if (task.getId() > fileTaskManager.id) {
-                    fileTaskManager.id = task.getId();
+                // Сравниваем полученный rowId и счётчик
+                if (task.getId() > fileTaskManager.generatedId) {
+                    fileTaskManager.generatedId = task.getId();
                 }
                 // В зависимости от типа объекта добавляем значение в хранилище
                 switch (task.getType()) {
-                    case TASK -> fileTaskManager.tasks.put(task.getId(), task);
+                    case TASK -> {
+                        // Добавляем задачу в список приоритетов
+                        fileTaskManager.addPrioritizedTask(task);
+                        // Добавляем задачу в хранилище
+                        fileTaskManager.tasks.put(task.getId(), task);
+                    }
                     case EPIC -> fileTaskManager.epics.put(task.getId(), (Epic) task);
-                    case SUBTASK -> fileTaskManager.subtasks.put(task.getId(), (Subtask) task);
+                    case SUBTASK -> {
+                        // Добавляем подзадачу в список приоритетов
+                        fileTaskManager.addPrioritizedTask(task);
+                        // Добавляем подзадачу в хранилище
+                        fileTaskManager.subtasks.put(task.getId(), (Subtask) task);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -133,12 +148,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String[] paramsArray = line.split(",");
         // Получаем тип сущности
         TaskTypes type = TaskTypes.valueOf(paramsArray[1]);
+        // Получаем дату начала или null
+        LocalDateTime startTime =
+                paramsArray[6].isBlank() ? null : LocalDateTime.parse(paramsArray[6], Task.getFormatter());
+        // Получаем длительность или null
+        Duration duration =
+                paramsArray[7].isBlank() ? null : Duration.of(Integer.parseInt(paramsArray[7]), ChronoUnit.MINUTES);
 
         // В зависимости от типа задачи
         switch (type) {
             case TASK -> {
-                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]), paramsArray[2],
-                        paramsArray[4]);
+                return new Task(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
+                        paramsArray[2], paramsArray[4], startTime, duration);
             }
             case EPIC -> {
                 return new Epic(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]), paramsArray[2],
@@ -148,8 +169,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 // Получаем эпик из хранилища
                 Epic epic = epics.get(Integer.parseInt(paramsArray[5]));
                 Subtask subtask = new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
-                        paramsArray[2], paramsArray[4], epic);
+                        paramsArray[2], paramsArray[4], startTime, duration, epic);
                 epic.addNewSubtask(subtask);
+                // Пересчитываем поля эпика
+                epic.calculateFields();
                 return subtask;
             }
         }
@@ -179,9 +202,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void deleteTasks() {
-        for (Task task : tasks.values()) {
-            deleteTask(task.getId());
-        }
+        super.deleteTasks();
+        save();
     }
 
     @Override

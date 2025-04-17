@@ -3,10 +3,11 @@ package ru.yandex.practicum.scheduler.managers;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.scheduler.exceptions.ManagerSaveException;
@@ -15,288 +16,27 @@ import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
 import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
-import ru.yandex.practicum.scheduler.models.enums.StatusTypes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     private TaskManager taskManager;
     private Path tempFile;
 
-    @BeforeEach
-    void init() throws ManagerSaveException {
+    @Override
+    protected FileBackedTaskManager createTaskManager() {
         HistoryManager historyManager = Managers.getDefaultHistory();
 
         try {
             tempFile = File.createTempFile("database", "csv").toPath();
             tempFile.toFile().deleteOnExit();
             taskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
+            return (FileBackedTaskManager) taskManager;
         } catch (IOException e) {
             throw new ManagerSaveException();
         }
-    }
-
-    @DisplayName("Операции с Task: Добавление")
-    @Test
-    void addNew() {
-        List<Task> expected = new ArrayList<>();
-        Task task = new Task("Test task", "Test task description");
-        int taskId1 = taskManager.addNewTask(task);
-        expected.add(task);
-
-        assertEquals(taskId1, taskManager.getTask(taskId1).getId(), "Id созданной и сохранённой задач не совпадают");
-        assertEquals(task, taskManager.getTask(taskId1), "Созданная и сохранённая задачи не совпадают ");
-        assertEquals(StatusTypes.NEW, taskManager.getTask(taskId1).getStatus(), "Статус новой задачи не NEW");
-
-        task = new Task("2nd test task", "2nd test description");
-        int taskId2 = taskManager.addNewTask(task);
-        expected.add(task);
-
-        assertNotEquals(taskId1, taskId2, "Id разных задач совпадают");
-        assertEquals(expected, taskManager.getTasks(), "Списки задач не совпадают");
-
-        task = taskManager.getSubtask(0);
-        assertNull(task, "Найдена не добавленная задача");
-    }
-
-    @DisplayName("Операции с Task: Изменение")
-    @Test
-    void updateTask() {
-        Task task = new Task("Test task", "Test task description");
-        int taskId = taskManager.addNewTask(task);
-
-        String expectedName = "Modified name";
-        String expectedDescription = "Modified description";
-        StatusTypes expectedStatus = StatusTypes.IN_PROGRESS;
-
-        task = taskManager.getTask(taskId);
-        task.setName(expectedName);
-        task.setDescription(expectedDescription);
-        task.setStatus(expectedStatus);
-        taskManager.updateTask(task);
-
-        task = taskManager.getTask(taskId);
-
-        assertEquals(expectedName, task.getName(), "Изменённое название не сохранилось");
-        assertEquals(expectedDescription, task.getDescription(), "Изменённое описание не сохранилось");
-        assertEquals(expectedStatus, task.getStatus(), "Изменённый статус не сохранился");
-    }
-
-    @DisplayName("Операции с Task: Удаление")
-    @Test
-    void deleteTask() {
-        List<Task> expected = new ArrayList<>();
-        Task task = new Task("Test task", "Test task description");
-        taskManager.addNewTask(task);
-        expected.add(task);
-
-        task = new Task("2nd test task", "2nd test description");
-        int taskId2 = taskManager.addNewTask(task);
-        expected.add(task);
-
-        taskManager.deleteTask(0);
-        assertEquals(expected, taskManager.getTasks(), "Списки после удаления несуществующей записи не совпадают");
-
-        expected.remove(task);
-        taskManager.deleteTask(taskId2);
-        assertEquals(expected, taskManager.getTasks(), "Списки после удаления задачи не совпадают");
-
-        taskManager.deleteTasks();
-        expected.clear();
-        assertEquals(expected, taskManager.getTasks(), "Списки после очистки не совпадают");
-    }
-
-    @DisplayName("Операции с Subtask: Добавление")
-    @Test
-    void addNewSubtask() {
-        List<Subtask> expected = new ArrayList<>();
-        Epic epic = new Epic("Epic name", "Epic description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
-        taskManager.addNewEpic(epic);
-
-        int subtaskId1 = taskManager.addNewSubtask(subtask);
-        epic.addNewSubtask(subtask);
-        taskManager.updateEpic(epic);
-        expected.add(subtask);
-
-        assertEquals(subtask, taskManager.getSubtask(subtaskId1), "Созданная и сохранённая подзадачи не совпадают");
-        assertEquals(StatusTypes.NEW, taskManager.getSubtask(subtaskId1).getStatus(), "Статус новой подзадачи не NEW");
-
-        subtask = new Subtask("2nd test subtask", "2nd test description", epic);
-        epic.addNewSubtask(subtask);
-        int subtaskId2 = taskManager.addNewSubtask(subtask);
-        taskManager.updateEpic(epic);
-        expected.add(subtask);
-
-        assertNotEquals(subtaskId1, subtaskId2, "Id разных задач совпадают");
-        assertEquals(expected, taskManager.getSubtasks(), "Неожиданное количество подзадач в TaskManager");
-        assertEquals(expected, taskManager.getEpic(epic.getId()).getSubtasks(), "Неожиданное количество задач в эпике");
-
-        subtask = taskManager.getSubtask(0);
-        assertNull(subtask, "Найдена не добавленная задача");
-    }
-
-    @DisplayName("Операции с Subtask: Изменение")
-    @Test
-    void updateSubtask() {
-        Epic epic = new Epic("Epic name", "Epic description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
-        taskManager.addNewEpic(epic);
-
-        int subtaskId = taskManager.addNewSubtask(subtask);
-        epic.addNewSubtask(subtask);
-        taskManager.updateEpic(epic);
-
-        String expectedName = "Modified name";
-        String expectedDescription = "Modified description";
-        StatusTypes expectedStatus = StatusTypes.IN_PROGRESS;
-        subtask = taskManager.getSubtask(subtaskId);
-        subtask.setName(expectedName);
-        subtask.setDescription(expectedDescription);
-        subtask.setStatus(expectedStatus);
-        taskManager.updateSubtask(subtask);
-
-        assertEquals(expectedName, taskManager.getSubtask(subtask.getId()).getName(),
-                "Изменённое название не сохранилось");
-        assertEquals(expectedDescription, taskManager.getSubtask(subtask.getId()).getDescription(),
-                "Изменённое описание не сохранилось");
-        assertEquals(expectedStatus, taskManager.getSubtask(subtask.getId()).getStatus(),
-                "Изменённый статус не сохранился");
-    }
-
-    @DisplayName("Операции с Subtask: Удаление")
-    @Test
-    void deleteSubtask() {
-        List<Subtask> expected = new ArrayList<>();
-        Epic epic = new Epic("Epic name", "Epic description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
-        taskManager.addNewEpic(epic);
-
-        taskManager.addNewSubtask(subtask);
-        epic.addNewSubtask(subtask);
-        taskManager.updateEpic(epic);
-        expected.add(subtask);
-
-        subtask = new Subtask("2nd test subtask", "2nd test description", epic);
-
-        int subtaskId2 = taskManager.addNewSubtask(subtask);
-        epic.addNewSubtask(subtask);
-
-        taskManager.updateEpic(epic);
-        expected.add(subtask);
-
-        taskManager.deleteSubtask(0);
-        assertEquals(expected, taskManager.getSubtasks(),
-                "Списки подзадач не совпадают после удаления несуществующей подзадачи");
-
-        taskManager.deleteSubtask(subtaskId2);
-        expected.remove(subtask);
-        subtask = taskManager.getSubtask(subtaskId2);
-        assertNull(subtask, "Подзадача не удалена");
-        assertEquals(expected, taskManager.getSubtasks(), "Списки после удаления одной подзадачи не совпадают");
-        assertEquals(expected, taskManager.getEpic(epic.getId()).getSubtasks(),
-                "Списки подзадач после удаления подзадачи не совпадают");
-
-        taskManager.deleteSubtasks();
-        expected.clear();
-
-        assertEquals(expected, taskManager.getSubtasks(), "Неожиданное количество подзадач");
-    }
-
-    @DisplayName("Операции с Epic: Добавление")
-    @Test
-    void addNewEpic() {
-        List<Epic> expected = new ArrayList<>();
-        List<Subtask> subtasks = new ArrayList<>();
-
-        Epic epic1 = new Epic("Epic name", "Epic description");
-        int epicId1 = taskManager.addNewEpic(epic1);
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic1);
-        taskManager.addNewSubtask(subtask);
-        epic1.addNewSubtask(subtask);
-        taskManager.updateEpic(epic1);
-        subtasks.add(subtask);
-        expected.add(epic1);
-        assertEquals(epic1, taskManager.getEpic(epicId1), "Созданный и сохранённый эпики не совпадают");
-
-        Epic epic2 = new Epic("Second epic name", "Second epic description");
-        int epicId2 = taskManager.addNewEpic(epic2);
-        expected.add(epic2);
-        assertNotEquals(epicId1, epicId2, "Id разных эпиков совпадают");
-        assertNotEquals(taskManager.getEpic(epicId1), taskManager.getEpic(epicId2), "Разные эпики совпадают");
-        assertEquals(expected, taskManager.getEpics(), "Списки эпиков не совпадают");
-
-        subtask = new Subtask("2nd test subtask", "2nd test description", epic1);
-        taskManager.addNewSubtask(subtask);
-        epic1.addNewSubtask(subtask);
-        taskManager.updateEpic(epic1);
-        subtasks.add(subtask);
-
-        assertEquals(subtasks, taskManager.getEpic(epicId1).getSubtasks(), "Неожиданное количество подзадач");
-    }
-
-    @DisplayName("Операции с Epic: Изменение")
-    @Test
-    void updateEpic() {
-        Epic epic = new Epic("Epic name", "Epic description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
-        int epicId = taskManager.addNewEpic(epic);
-        int subtaskId = taskManager.addNewSubtask(subtask);
-        epic.addNewSubtask(subtask);
-        taskManager.updateEpic(epic);
-
-        String expectedName = "Modified name";
-        String expectedDescription = "Modified description";
-        StatusTypes expectedStatus = StatusTypes.IN_PROGRESS;
-        subtask = taskManager.getSubtask(subtaskId);
-        subtask.setStatus(expectedStatus);
-        epic.setName(expectedName);
-        epic.setDescription(expectedDescription);
-        taskManager.updateSubtask(subtask);
-        taskManager.updateEpic(epic);
-
-        epic = taskManager.getEpic(epicId);
-        assertEquals(expectedName, epic.getName(), "Изменённое название не сохранилось");
-        assertEquals(expectedDescription, epic.getDescription(), "Изменённое описание не сохранилось");
-        assertEquals(expectedStatus, epic.getStatus(), "Статус эпика не пересчитался после изменения подзадачи");
-    }
-
-    @DisplayName("Операции с Epic: Удаление")
-    @Test
-    void deleteEpic() {
-        List<Epic> expected = new ArrayList<>();
-
-        Epic epic = new Epic("Epic name", "Epic description");
-        int epicId1 = taskManager.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", epic);
-        int subtaskId = taskManager.addNewSubtask(subtask);
-        subtask.setId(subtaskId);
-        epic.addNewSubtask(subtask);
-        taskManager.updateEpic(epic);
-        expected.add(epic);
-
-        epic = new Epic("Second epic name", "Second epic description");
-        taskManager.addNewEpic(epic);
-        expected.add(epic);
-
-        taskManager.deleteEpic(0);
-        assertEquals(expected, taskManager.getEpics(),
-                "Списки эпиков не совпадают после удаления несуществующего эпика");
-
-        epic = taskManager.getEpic(epicId1);
-        taskManager.deleteEpic(epicId1);
-        expected.remove(epic);
-        assertEquals(expected, taskManager.getEpics(), "Списки эпиков не совпадают после удаления эпика");
-
-        epic = taskManager.getEpic(epicId1);
-        assertNull(epic, "Эпик не удалён");
-
-        taskManager.deleteEpics();
-        expected.clear();
-        assertEquals(expected, taskManager.getEpics(), "Списки эпиков не совпадают после очистки");
     }
 
     @DisplayName("Операции с файлами: Сохранение и загрузка")
@@ -314,13 +54,17 @@ public class FileBackedTaskManagerTest {
         HistoryManager historyManager = Managers.getDefaultHistory();
         FileBackedTaskManager firstTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
 
-        Task taskFirstManager = new Task("First task name", "First task description");
+        Task taskFirstManager = new Task("First task name", "First task description", LocalDateTime.now(),
+                Duration.ofMinutes(1));
         firstTaskManager.addNewTask(taskFirstManager);
         Epic epicFirstManager = new Epic("First epic name", "First epic description");
         firstTaskManager.addNewEpic(epicFirstManager);
-        Subtask subtaskFirstManager = new Subtask("First subtask name", "First subtask description", epicFirstManager);
+        Subtask subtaskFirstManager = new Subtask("First subtask name", "First subtask description",
+                taskFirstManager.getEndTime().plusMinutes(1), taskFirstManager.getDuration(), epicFirstManager);
         firstTaskManager.addNewSubtask(subtaskFirstManager);
         FileBackedTaskManager secondTaskManager = FileBackedTaskManager.loadFromFile(tempFile.toFile());
+        List<Task> firstTaskManagerPrioritizedTasks = firstTaskManager.getPrioritizedTasks();
+        List<Task> secondTaskManagerPrioritizedTasks = secondTaskManager.getPrioritizedTasks();
 
         assertEquals(firstTaskManager.getTasks().size(), secondTaskManager.getTasks().size(),
                 "Не совпадают загруженный и сохранённый списки задач");
@@ -328,40 +72,74 @@ public class FileBackedTaskManagerTest {
                 "Не совпадают загруженный и сохранённый списки эпиков");
         assertEquals(firstTaskManager.getSubtasks().size(), secondTaskManager.getSubtasks().size(),
                 "Не совпадают загруженный и сохранённый списки подзадач");
+        assertEquals(firstTaskManagerPrioritizedTasks, secondTaskManagerPrioritizedTasks,
+                "Не совпадают сохранённый и загруженный списки приоритетов");
 
-        Task taskSecondManager = secondTaskManager.getTask(taskFirstManager.getId());
-        assertEquals(taskFirstManager, taskSecondManager, "Задачи: Не совпадают значения поля id");
-        assertEquals(taskFirstManager.getName(), taskSecondManager.getName(),
-                "Задачи: Не совпадают значения поля name");
-        assertEquals(taskFirstManager.getType(), taskSecondManager.getType(),
-                "Задачи: Не совпадают значения поля type");
-        assertEquals(taskFirstManager.getDescription(), taskSecondManager.getDescription(),
+        Optional<Task> taskSecondManager = Optional.ofNullable(secondTaskManager.getTask(taskFirstManager.getId()));
+
+        assertTrue(taskSecondManager.isPresent(), "Не вернулась задача из второго менеджера");
+
+        Task taskSM = taskSecondManager.get();
+
+        assertEquals(taskFirstManager, taskSM, "Задачи: Не совпадают значения поля rowId");
+        assertEquals(taskFirstManager.getName(), taskSM.getName(), "Задачи: Не совпадают значения поля name");
+        assertEquals(taskFirstManager.getType(), taskSM.getType(), "Задачи: Не совпадают значения поля type");
+        assertEquals(taskFirstManager.getDescription(), taskSM.getDescription(),
                 "Задачи: Не совпадают значения поля description");
-        assertEquals(taskFirstManager.getStatus(), taskSecondManager.getStatus(),
-                "Задачи: Не совпадают значения поля status");
+        assertEquals(taskFirstManager.getStatus(), taskSM.getStatus(), "Задачи: Не совпадают значения поля status");
+        assertEquals(taskFirstManager.getStartTime().truncatedTo(ChronoUnit.MINUTES),
+                taskSM.getStartTime().truncatedTo(ChronoUnit.MINUTES), "Задачи: Не совпадают значения поля startTime");
+        assertEquals(taskFirstManager.getDuration(), taskSM.getDuration(),
+                "Задачи: Не совпадают значения поля duration");
+        assertEquals(taskFirstManager.getEndTime().truncatedTo(ChronoUnit.MINUTES),
+                taskSM.getEndTime().truncatedTo(ChronoUnit.MINUTES),
+                "Задачи: Не совпадают результаты метода getEndTime()");
 
-        Epic epicSecondManager = secondTaskManager.getEpic(epicFirstManager.getId());
-        assertEquals(epicFirstManager, epicSecondManager, "Эпики: Не совпадают значения поля id");
-        assertEquals(epicFirstManager.getName(), epicSecondManager.getName(), "Эпики: Не совпадают значения поля name");
-        assertEquals(epicFirstManager.getType(), epicSecondManager.getType(), "Эпики: Не совпадают значения поля type");
-        assertEquals(epicFirstManager.getDescription(), epicSecondManager.getDescription(),
+        Optional<Epic> epicSecondManager = Optional.ofNullable(secondTaskManager.getEpic(epicFirstManager.getId()));
+
+        assertTrue(epicSecondManager.isPresent(), "Эпики: Из файла не получен эпик");
+
+        Epic epicSM = epicSecondManager.get();
+
+        assertEquals(epicFirstManager, epicSM, "Эпики: Не совпадают значения поля rowId");
+        assertEquals(epicFirstManager.getName(), epicSM.getName(), "Эпики: Не совпадают значения поля name");
+        assertEquals(epicFirstManager.getType(), epicSM.getType(), "Эпики: Не совпадают значения поля type");
+        assertEquals(epicFirstManager.getDescription(), epicSM.getDescription(),
                 "Эпики: Не совпадают значения поля description");
-        assertEquals(epicFirstManager.getStatus(), epicSecondManager.getStatus(),
-                "Эпики: Не совпадают значения поля status");
-        assertEquals(epicFirstManager.getSubtasks(), epicSecondManager.getSubtasks(),
-                "Эпики: Не совпадают списки подзадач");
+        assertEquals(epicFirstManager.getStatus(), epicSM.getStatus(), "Эпики: Не совпадают значения поля status");
+        assertEquals(epicFirstManager.getSubtasks(), epicSM.getSubtasks(), "Эпики: Не совпадают списки подзадач");
+        assertEquals(epicFirstManager.getStartTime() != null ? epicFirstManager.getStartTime()
+                        .truncatedTo(ChronoUnit.MINUTES) : null,
+                epicSM.getStartTime() != null ? epicSecondManager.get().getStartTime().truncatedTo(ChronoUnit.MINUTES)
+                        : null, "Эпики: Не совпадает значение поля startTime");
+        assertEquals(epicFirstManager.getDuration(), epicSM.getDuration(),
+                "Эпики: Не совпадают значения поля duration");
+        assertEquals(epicFirstManager.getEndTime().truncatedTo(ChronoUnit.MINUTES),
+                epicSM.getEndTime().truncatedTo(ChronoUnit.MINUTES),
+                "Эпики: Не совпадают значения метода getEndTime()");
 
-        Subtask subtaskSecondManager = secondTaskManager.getSubtask(subtaskFirstManager.getId());
-        assertEquals(subtaskFirstManager, subtaskSecondManager, "Подзадачи: Не совпадают значения поля id");
-        assertEquals(subtaskFirstManager.getName(), subtaskSecondManager.getName(),
-                "Подзадачи: Не совпадают значения поля name");
-        assertEquals(subtaskFirstManager.getType(), subtaskSecondManager.getType(),
-                "Подзадачи: Не совпадают значения поля type");
-        assertEquals(subtaskFirstManager.getDescription(), subtaskSecondManager.getDescription(),
+        Optional<Subtask> subtaskSecondManager = Optional.ofNullable(
+                secondTaskManager.getSubtask(subtaskFirstManager.getId()));
+
+        assertTrue(subtaskSecondManager.isPresent(), "Подзадачи: Из файла не получена подзадача");
+
+        Subtask subtaskSM = subtaskSecondManager.get();
+
+        assertEquals(subtaskFirstManager, subtaskSM, "Подзадачи: Не совпадают значения поля rowId");
+        assertEquals(subtaskFirstManager.getName(), subtaskSM.getName(), "Подзадачи: Не совпадают значения поля name");
+        assertEquals(subtaskFirstManager.getType(), subtaskSM.getType(), "Подзадачи: Не совпадают значения поля type");
+        assertEquals(subtaskFirstManager.getDescription(), subtaskSM.getDescription(),
                 "Подзадачи: Не совпадают значения поля description");
-        assertEquals(subtaskFirstManager.getStatus(), subtaskSecondManager.getStatus(),
+        assertEquals(subtaskFirstManager.getStatus(), subtaskSM.getStatus(),
                 "Подзадачи: Не совпадают значения поля status");
-        assertEquals(subtaskFirstManager.getEpic(), subtaskSecondManager.getEpic(),
-                "Подзадачи: Не совпадают родительские эпики");
+        assertEquals(subtaskFirstManager.getEpic(), subtaskSM.getEpic(), "Подзадачи: Не совпадают родительские эпики");
+        assertEquals(subtaskFirstManager.getStartTime().truncatedTo(ChronoUnit.MINUTES),
+                subtaskSM.getStartTime().truncatedTo(ChronoUnit.MINUTES),
+                "Подзадачи: Не совпадает значение поля startTime");
+        assertEquals(subtaskFirstManager.getDuration(), subtaskSM.getDuration(),
+                "Подзадачи: Не совпадает значение поля duration");
+        assertEquals(subtaskFirstManager.getEndTime().truncatedTo(ChronoUnit.MINUTES),
+                subtaskSM.getEndTime().truncatedTo(ChronoUnit.MINUTES),
+                "Подзадачи: Не совпадает значение метода getEndTime()");
     }
 }

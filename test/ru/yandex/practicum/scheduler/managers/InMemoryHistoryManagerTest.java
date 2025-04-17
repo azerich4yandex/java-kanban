@@ -1,5 +1,7 @@
 package ru.yandex.practicum.scheduler.managers;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +15,7 @@ import ru.yandex.practicum.scheduler.models.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class HistoryManagerTest {
+class InMemoryHistoryManagerTest {
 
     private HistoryManager historyManager;
     private TaskManager taskManager;
@@ -24,18 +26,20 @@ class HistoryManagerTest {
         historyManager = Managers.getDefaultHistory();
         taskManager = new InMemoryTaskManager(historyManager);
 
-        Task task = new Task("First task", "First task description");
+        Task task = new Task("First task", "First task description", LocalDateTime.now(), Duration.ofMinutes(30));
         taskId = taskManager.addNewTask(task);
-        task = new Task("Second task", "Second task description");
+        task = new Task("Second task", "Second task description", task.getEndTime().plusMinutes(1), task.getDuration());
         taskManager.addNewTask(task);
 
         Epic epic = new Epic("First epic", "First epic description");
         taskManager.addNewEpic(epic);
 
-        Subtask subtask = new Subtask("First subtask", "First subtask description", epic);
+        Subtask subtask = new Subtask("First subtask", "First subtask description", task.getEndTime().plusMinutes(1),
+                task.getDuration(), epic);
         epic.addNewSubtask(subtask);
         taskManager.addNewSubtask(subtask);
-        subtask = new Subtask("Second subtask", "Second task description", epic);
+        subtask = new Subtask("Second subtask", "Second task description", subtask.getEndTime().plusMinutes(1),
+                subtask.getDuration(), epic);
         epic.addNewSubtask(subtask);
         taskManager.addNewSubtask(subtask);
         taskManager.updateEpic(epic);

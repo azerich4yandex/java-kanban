@@ -1,5 +1,7 @@
 package ru.yandex.practicum.scheduler.models;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ class TaskTest {
     @DisplayName("Задачи с одинаковым Id должны совпадать (Через менеджер задач)")
     @Test
     void shouldBeEqualsWithSameIdThroughTaskManager() {
-        Task task = new Task("Task name", "Task description");
+        Task task = new Task("Task name", "Task description", LocalDateTime.now(), Duration.ofMinutes(30));
         int taskId = taskManager.addNewTask(task);
 
         Task task2 = taskManager.getTask(taskId);

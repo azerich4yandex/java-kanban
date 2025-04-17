@@ -9,8 +9,9 @@ public interface TaskManager {
 
     List<Task> getHistory();
 
-    //<editor-fold desc="Task methods">
     List<Task> getTasks();
+
+    List<Task> getPrioritizedTasks();
 
     Task getTask(int id);
 
@@ -21,9 +22,7 @@ public interface TaskManager {
     void deleteTask(int id);
 
     void deleteTasks();
-    //</editor-fold>
 
-    //<editor-fold desc="Epic methods">
     List<Epic> getEpics();
 
     Epic getEpic(int id);
@@ -35,9 +34,7 @@ public interface TaskManager {
     void deleteEpic(int id);
 
     void deleteEpics();
-    //</editor-fold>
 
-    //<editor-fold desc="Subtask methods">
     List<Subtask> getSubtasks();
 
     Subtask getSubtask(int id);
@@ -51,5 +48,4 @@ public interface TaskManager {
     void deleteSubtask(int id);
 
     void deleteSubtasks();
-    //</editor-fold>
 }
