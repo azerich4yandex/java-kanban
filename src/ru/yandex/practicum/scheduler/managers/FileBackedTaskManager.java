@@ -43,11 +43,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         HistoryManager historyManager = Managers.getDefaultHistory();
         FileBackedTaskManager firstTaskManager = new FileBackedTaskManager(historyManager, tempFile.toFile());
 
-        Task firstTask = new Task("First task name", "First task description");
+        Task firstTask = new Task("First task name", "First task description", LocalDateTime.now(),
+                Duration.ofMinutes(10));
         firstTaskManager.addNewTask(firstTask);
         Epic firstEpic = new Epic("First epic name", "First epic description");
         firstTaskManager.addNewEpic(firstEpic);
-        Subtask firstSubtask = new Subtask("First subtask name", "First subtask description", firstEpic);
+        Subtask firstSubtask = new Subtask("First subtask name", "First subtask description",
+                firstTask.getEndTime().plusMinutes(1), firstTask.getDuration(), firstEpic);
         firstTaskManager.addNewSubtask(firstSubtask);
         List<Task> expected = new ArrayList<>(firstTaskManager.getAllTasks());
 
