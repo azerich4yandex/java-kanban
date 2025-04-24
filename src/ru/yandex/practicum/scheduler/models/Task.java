@@ -18,6 +18,9 @@ public class Task implements Comparable<Task> {
     protected Duration duration;
     protected LocalDateTime startTime;
 
+    public Task() {
+    }
+
     public Task(String name, String description) {
         this.name = name;
         this.description = description;
@@ -149,10 +152,17 @@ public class Task implements Comparable<Task> {
 
     @Override
     public String toString() {
+        String epicId = "";
+
+        if (this.getClass().equals(Subtask.class)) {
+            Subtask subtask = (Subtask) this;
+            epicId = subtask.getEpicId().toString();
+        }
+
         return "Id: " + rowId + "; Name: " + name + "; Description: " + description + "; Status: " + status.name()
                 + "; Start time: " + (startTime != null ? startTime.format(FORMATTER) : "") + "; Duration: " + (
                 duration != null ? duration.toString() : "") + "; End time: " + (getEndTime() != null
-                ? getEndTime().format(FORMATTER) : "");
+                ? getEndTime().format(FORMATTER) : "") + (epicId.isEmpty() ? "" : "; EpidId: " + epicId);
     }
 
     public String toCSV() {
@@ -161,7 +171,7 @@ public class Task implements Comparable<Task> {
         long durationMinutes = 0;
         if (this.getClass().equals(Subtask.class)) {
             Subtask subtask = (Subtask) this;
-            epicId = subtask.getEpic().getId().toString();
+            epicId = subtask.getEpicId().toString();
         }
 
         if (this.getClass().equals(Task.class) || this.getClass().equals(Subtask.class)) {

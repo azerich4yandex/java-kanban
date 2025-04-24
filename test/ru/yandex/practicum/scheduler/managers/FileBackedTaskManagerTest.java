@@ -42,13 +42,13 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     @DisplayName("Операции с файлами: Сохранение и загрузка")
     @Test
     void saveAndLoadOperations() throws ManagerSaveException {
-        Path tempFile;
+        Path tempFile = null;
 
         try {
             tempFile = File.createTempFile("database", ".csv").toPath();
             tempFile.toFile().deleteOnExit();
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Ошибка при создании временного файла " + tempFile.toFile().getPath(), e);
         }
 
         HistoryManager historyManager = Managers.getDefaultHistory();
@@ -56,12 +56,17 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
 
         Task taskFirstManager = new Task("First task name", "First task description", LocalDateTime.now(),
                 Duration.ofMinutes(1));
-        firstTaskManager.addNewTask(taskFirstManager);
+        firstTaskManager.createTask(taskFirstManager);
         Epic epicFirstManager = new Epic("First epic name", "First epic description");
-        firstTaskManager.addNewEpic(epicFirstManager);
+        firstTaskManager.createEpic(epicFirstManager);
+
         Subtask subtaskFirstManager = new Subtask("First subtask name", "First subtask description",
-                taskFirstManager.getEndTime().plusMinutes(1), taskFirstManager.getDuration(), epicFirstManager);
-        firstTaskManager.addNewSubtask(subtaskFirstManager);
+                taskFirstManager.getEndTime().plusMinutes(1), taskFirstManager.getDuration(), epicFirstManager.getId());
+        firstTaskManager.createSubtask(subtaskFirstManager);
+
+        epicFirstManager.addSubtask(subtaskFirstManager.getId());
+        firstTaskManager.updateEpic(epicFirstManager);
+
         FileBackedTaskManager secondTaskManager = FileBackedTaskManager.loadFromFile(tempFile.toFile());
         List<Task> firstTaskManagerPrioritizedTasks = firstTaskManager.getPrioritizedTasks();
         List<Task> secondTaskManagerPrioritizedTasks = secondTaskManager.getPrioritizedTasks();
@@ -75,7 +80,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         assertEquals(firstTaskManagerPrioritizedTasks, secondTaskManagerPrioritizedTasks,
                 "Не совпадают сохранённый и загруженный списки приоритетов");
 
-        Optional<Task> taskSecondManager = Optional.ofNullable(secondTaskManager.getTask(taskFirstManager.getId()));
+        Optional<Task> taskSecondManager = secondTaskManager.getTaskById(taskFirstManager.getId());
 
         assertTrue(taskSecondManager.isPresent(), "Не вернулась задача из второго менеджера");
 
@@ -95,7 +100,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
                 taskSM.getEndTime().truncatedTo(ChronoUnit.MINUTES),
                 "Задачи: Не совпадают результаты метода getEndTime()");
 
-        Optional<Epic> epicSecondManager = Optional.ofNullable(secondTaskManager.getEpic(epicFirstManager.getId()));
+        Optional<Epic> epicSecondManager = secondTaskManager.getEpicById(epicFirstManager.getId());
 
         assertTrue(epicSecondManager.isPresent(), "Эпики: Из файла не получен эпик");
 
@@ -107,7 +112,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         assertEquals(epicFirstManager.getDescription(), epicSM.getDescription(),
                 "Эпики: Не совпадают значения поля description");
         assertEquals(epicFirstManager.getStatus(), epicSM.getStatus(), "Эпики: Не совпадают значения поля status");
-        assertEquals(epicFirstManager.getSubtasks(), epicSM.getSubtasks(), "Эпики: Не совпадают списки подзадач");
+        assertEquals(epicFirstManager.getSubtaskIds(), epicSM.getSubtaskIds(), "Эпики: Не совпадают списки подзадач");
         assertEquals(epicFirstManager.getStartTime() != null ? epicFirstManager.getStartTime()
                         .truncatedTo(ChronoUnit.MINUTES) : null,
                 epicSM.getStartTime() != null ? epicSecondManager.get().getStartTime().truncatedTo(ChronoUnit.MINUTES)
@@ -118,8 +123,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
                 epicSM.getEndTime().truncatedTo(ChronoUnit.MINUTES),
                 "Эпики: Не совпадают значения метода getEndTime()");
 
-        Optional<Subtask> subtaskSecondManager = Optional.ofNullable(
-                secondTaskManager.getSubtask(subtaskFirstManager.getId()));
+        Optional<Subtask> subtaskSecondManager = secondTaskManager.getSubtaskById(subtaskFirstManager.getId());
 
         assertTrue(subtaskSecondManager.isPresent(), "Подзадачи: Из файла не получена подзадача");
 
@@ -132,7 +136,8 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
                 "Подзадачи: Не совпадают значения поля description");
         assertEquals(subtaskFirstManager.getStatus(), subtaskSM.getStatus(),
                 "Подзадачи: Не совпадают значения поля status");
-        assertEquals(subtaskFirstManager.getEpic(), subtaskSM.getEpic(), "Подзадачи: Не совпадают родительские эпики");
+        assertEquals(subtaskFirstManager.getEpicId(), subtaskSM.getEpicId(),
+                "Подзадачи: Не совпадают родительские эпики");
         assertEquals(subtaskFirstManager.getStartTime().truncatedTo(ChronoUnit.MINUTES),
                 subtaskSM.getStartTime().truncatedTo(ChronoUnit.MINUTES),
                 "Подзадачи: Не совпадает значение поля startTime");
