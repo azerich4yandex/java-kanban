@@ -31,13 +31,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     public static void main(String[] args) {
-        Path tempFile;
+        Path tempFile = null;
 
         try {
             tempFile = File.createTempFile("database", ".csv").toPath();
             tempFile.toFile().deleteOnExit();
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Ошибка при создании временного файла " + tempFile.toFile().getPath(), e);
         }
 
         HistoryManager historyManager = Managers.getDefaultHistory();
@@ -45,12 +45,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         Task firstTask = new Task("First task name", "First task description", LocalDateTime.now(),
                 Duration.ofMinutes(10));
-        firstTaskManager.addNewTask(firstTask);
+        firstTaskManager.createTask(firstTask);
         Epic firstEpic = new Epic("First epic name", "First epic description");
-        firstTaskManager.addNewEpic(firstEpic);
+        firstTaskManager.createEpic(firstEpic);
         Subtask firstSubtask = new Subtask("First subtask name", "First subtask description",
-                firstTask.getEndTime().plusMinutes(1), firstTask.getDuration(), firstEpic);
-        firstTaskManager.addNewSubtask(firstSubtask);
+                firstTask.getEndTime().plusMinutes(1), firstTask.getDuration(), firstEpic.getId());
+        firstTaskManager.createSubtask(firstSubtask);
         List<Task> expected = new ArrayList<>(firstTaskManager.getAllTasks());
 
         FileBackedTaskManager secondTaskManager = loadFromFile(tempFile.toFile());
@@ -74,29 +74,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         result.addAll(getEpics());
         result.addAll(getSubtasks());
         return result;
-    }
-
-
-    private void save() {
-        // try with resources
-        try (FileWriter fw = new FileWriter(file, StandardCharsets.UTF_8)) {
-            // Пишем первую строчку
-            fw.write(FILE_HEADER + "\n");
-            // Если в хранилище нет данных
-            if (getAllTasks().isEmpty()) {
-                // пишем пустую строку.
-                fw.write("");
-            } else {
-                // Иначе получаем все сущности
-                for (Task task : getAllTasks()) {
-                    // и записываем их в файл
-                    fw.write(task.toCSV() + "\n");
-                }
-            }
-        } catch (IOException e) {
-            // При проблемах с файлом выбрасываем своё исключение
-            throw new ManagerSaveException(e);
-        }
     }
 
     static FileBackedTaskManager loadFromFile(File file) {
@@ -128,19 +105,46 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     }
                     case EPIC -> fileTaskManager.epics.put(task.getId(), (Epic) task);
                     case SUBTASK -> {
+                        Subtask subtask = (Subtask) task;
                         // Добавляем подзадачу в список приоритетов
                         fileTaskManager.addPrioritizedTask(task);
                         // Добавляем подзадачу в хранилище
-                        fileTaskManager.subtasks.put(task.getId(), (Subtask) task);
+                        fileTaskManager.subtasks.put(task.getId(), subtask);
+                        // Получаем родительский эпик
+                        Epic recevedEpic = fileTaskManager.getEpicInternal(subtask.getEpicId());
+                        recevedEpic.addSubtask(subtask.getId());
+                        fileTaskManager.updateEpic(recevedEpic);
                     }
                 }
             }
         } catch (IOException e) {
             // При проблемах с файлом выбрасываем своё исключение
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Ошибка при загрузке из файла " + file.getPath(), e);
         }
 
         return fileTaskManager;
+    }
+
+    private void save() {
+        // try with resources
+        try (FileWriter fw = new FileWriter(file, StandardCharsets.UTF_8)) {
+            // Пишем первую строчку
+            fw.write(FILE_HEADER + "\n");
+            // Если в хранилище нет данных
+            if (getAllTasks().isEmpty()) {
+                // пишем пустую строку.
+                fw.write("");
+            } else {
+                // Иначе получаем все сущности
+                for (Task task : getAllTasks()) {
+                    // и записываем их в файл
+                    fw.write(task.toCSV() + "\n");
+                }
+            }
+        } catch (IOException e) {
+            // При проблемах с файлом выбрасываем своё исключение
+            throw new ManagerSaveException("Ошибка при сохранении в файл " + file.getPath(), e);
+        }
     }
 
     private Task fromString(String line) {
@@ -167,13 +171,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
             case SUBTASK -> {
                 // Получаем эпик из хранилища
-                Epic epic = epics.get(Integer.parseInt(paramsArray[5]));
-                Subtask subtask = new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
-                        paramsArray[2], paramsArray[4], startTime, duration, epic);
-                epic.addNewSubtask(subtask);
-                // Пересчитываем поля эпика
-                epic.calculateFields();
-                return subtask;
+                Epic epic = getEpicInternal(Integer.parseInt(paramsArray[5]));
+                return new Subtask(Integer.parseInt(paramsArray[0]), StatusTypes.valueOf(paramsArray[3]),
+                        paramsArray[2], paramsArray[4], startTime, duration, epic.getId());
             }
         }
         // В противном случае возвращаем null
@@ -181,8 +181,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public int addNewTask(Task task) {
-        super.addNewTask(task);
+    public Integer createTask(Task task) {
+        super.createTask(task);
         // Сохраняем состояние хранилища
         save();
         return task.getId();
@@ -195,7 +195,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deleteTask(int id) {
+    public void deleteTask(Integer id) {
         super.deleteTask(id);
         save();
     }
@@ -207,8 +207,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public int addNewEpic(Epic epic) {
-        super.addNewEpic(epic);
+    public Integer createEpic(Epic epic) {
+        super.createEpic(epic);
         save();
         return epic.getId();
     }
@@ -220,7 +220,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deleteEpic(int id) {
+    public void deleteEpic(Integer id) {
         super.deleteEpic(id);
         save();
     }
@@ -233,8 +233,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public int addNewSubtask(Subtask subtask) {
-        super.addNewSubtask(subtask);
+    public Integer createSubtask(Subtask subtask) {
+        super.createSubtask(subtask);
         save();
         return subtask.getId();
     }
@@ -246,7 +246,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deleteSubtask(int id) {
+    public void deleteSubtask(Integer id) {
         super.deleteSubtask(id);
         save();
     }

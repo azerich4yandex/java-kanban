@@ -7,38 +7,38 @@ import ru.yandex.practicum.scheduler.models.enums.TaskTypes;
 
 public class Subtask extends Task {
 
-    private Epic epic;
+    private Integer epicId;
 
-    public Subtask(String name, String description, Epic epic) {
+    public Subtask(String name, String description, Integer epicId) {
         super(name, description);
-        this.epic = epic;
+        this.epicId = epicId;
         this.type = TaskTypes.SUBTASK;
     }
 
-    public Subtask(String name, String description, LocalDateTime startTime, Duration duration, Epic epic) {
+    public Subtask(String name, String description, LocalDateTime startTime, Duration duration, int epicId) {
         super(name, description, startTime, duration);
-        this.epic = epic;
+        this.epicId = epicId;
         this.type = TaskTypes.SUBTASK;
     }
 
-    public Subtask(Integer id, StatusTypes status, String name, String description, Epic epic) {
+    public Subtask(Integer id, StatusTypes status, String name, String description, int epicId) {
         super(id, status, name, description);
         this.type = TaskTypes.SUBTASK;
-        this.epic = epic;
+        this.epicId = epicId;
     }
 
     public Subtask(Integer id, StatusTypes status, String name, String description, LocalDateTime startTime,
-                   Duration duration, Epic epic) {
+                   Duration duration, int epicId) {
         super(id, status, name, description, startTime, duration);
         this.type = TaskTypes.SUBTASK;
-        this.epic = epic;
+        this.epicId = epicId;
     }
 
-    public Epic getEpic() {
-        return epic;
+    public Integer getEpicId() {
+        return epicId;
     }
 
-    public void setEpic(Epic epic) {
-        this.epic = epic;
+    public void setEpicId(Integer epicId) {
+        this.epicId = epicId;
     }
 }

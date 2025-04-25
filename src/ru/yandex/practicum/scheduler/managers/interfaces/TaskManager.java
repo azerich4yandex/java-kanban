@@ -1,6 +1,7 @@
 package ru.yandex.practicum.scheduler.managers.interfaces;
 
 import java.util.List;
+import java.util.Optional;
 import ru.yandex.practicum.scheduler.models.Epic;
 import ru.yandex.practicum.scheduler.models.Subtask;
 import ru.yandex.practicum.scheduler.models.Task;
@@ -13,39 +14,39 @@ public interface TaskManager {
 
     List<Task> getPrioritizedTasks();
 
-    Task getTask(int id);
+    Optional<Task> getTaskById(Integer id);
 
-    int addNewTask(Task task);
+    Integer createTask(Task task);
 
     void updateTask(Task task);
 
-    void deleteTask(int id);
+    void deleteTask(Integer id);
 
     void deleteTasks();
 
     List<Epic> getEpics();
 
-    Epic getEpic(int id);
+    Optional<Epic> getEpicById(Integer id);
 
-    int addNewEpic(Epic epic);
+    Integer createEpic(Epic epic);
 
     void updateEpic(Epic epic);
 
-    void deleteEpic(int id);
+    void deleteEpic(Integer id);
 
     void deleteEpics();
 
     List<Subtask> getSubtasks();
 
-    Subtask getSubtask(int id);
+    Optional<Subtask> getSubtaskById(Integer id);
 
-    List<Subtask> getEpicSubtasks(int epicId);
+    List<Subtask> getEpicSubtasks(Integer epicId);
 
-    int addNewSubtask(Subtask subtask);
+    Integer createSubtask(Subtask subtask);
 
     void updateSubtask(Subtask subtask);
 
-    void deleteSubtask(int id);
+    void deleteSubtask(Integer id);
 
     void deleteSubtasks();
 }

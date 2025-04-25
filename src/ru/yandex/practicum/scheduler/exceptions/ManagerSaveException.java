@@ -6,7 +6,7 @@ public class ManagerSaveException extends RuntimeException {
         super();
     }
 
-    public ManagerSaveException(Throwable cause) {
-        super(cause);
+    public ManagerSaveException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
