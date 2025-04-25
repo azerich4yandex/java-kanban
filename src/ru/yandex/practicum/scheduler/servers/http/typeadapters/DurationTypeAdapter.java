@@ -13,7 +13,7 @@ public class DurationTypeAdapter extends TypeAdapter<Duration> {
         if (duration == null) {
             jsonWriter.value("");
         } else {
-            jsonWriter.value(duration.toMinutes());
+            jsonWriter.value(duration.toSeconds());
         }
     }
 
@@ -23,7 +23,7 @@ public class DurationTypeAdapter extends TypeAdapter<Duration> {
         if (stringValue == null || stringValue.isEmpty()) {
             return null;
         } else {
-            return Duration.ofMinutes(Long.parseLong(stringValue));
+            return Duration.ofSeconds(Long.parseLong(stringValue));
         }
 
     }

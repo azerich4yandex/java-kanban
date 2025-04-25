@@ -3,29 +3,28 @@ package ru.yandex.practicum.scheduler.servers.http.handlers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import ru.yandex.practicum.scheduler.managers.interfaces.TaskManager;
 
-public class BaseHttpHandler {
+public abstract class BaseHttpHandler implements HttpHandler {
 
     protected final Gson gson;
-    private final Charset charset;
     protected TaskManager taskManager;
 
-    public BaseHttpHandler(TaskManager taskManager, Gson gson, Charset charset) {
+    public BaseHttpHandler(TaskManager taskManager, Gson gson) {
         this.taskManager = taskManager;
-        this.charset = charset;
         this.gson = gson;
     }
 
     protected void sendText(HttpExchange exchange, int statusCode, String text) throws IOException {
         // Получаем массив байт из сообщения.
-        byte[] resp = text.getBytes(charset);
+        byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         // Устанавливаем заголовок.
         exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
 
@@ -72,7 +71,8 @@ public class BaseHttpHandler {
             return "";
         } else {
             // Иначе
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), charset))) {
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
                 // собираем тело запроса в строку с разделителем.
                 return br.lines().collect(Collectors.joining("\n"));
             }

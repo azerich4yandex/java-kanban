@@ -113,7 +113,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         // Получаем родительский эпик
                         Epic recevedEpic = fileTaskManager.getEpicInternal(subtask.getEpicId());
                         recevedEpic.addSubtask(subtask.getId());
-                        fileTaskManager.calculateEpicFields(recevedEpic);
                         fileTaskManager.updateEpic(recevedEpic);
                     }
                 }

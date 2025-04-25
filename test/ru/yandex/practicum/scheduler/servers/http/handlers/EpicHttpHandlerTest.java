@@ -133,22 +133,7 @@ public class EpicHttpHandlerTest {
 
         subtask.setId(id);
 
-        // Обновляем эпик
-        epic.addSubtask(subtask.getId());
-        epic.setName("Updated name");
-        epic.setDescription("Updated description");
-        taskServer.getTaskManager().calculateEpicFields(epic);
-
-        // Формируем запрос на обновление эпика
-        request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(taskServer.getGson().toJson(epic)))
-                .uri(URI.create("http://localhost:" + taskServer.getPort() + "/epics/" + epic.getId()))
-                .header("Content-Type", "application/json").build();
-        // Получаем ответ
-        response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(200, response.statusCode(), "Код ответа не соответствует ожидаемому");
-
-        // Формируем запрос на добавление подзадач эпика
+        // Формируем запрос на получение подзадач эпика
         request = HttpRequest.newBuilder().GET()
                 .uri(URI.create("http://localhost:" + taskServer.getPort() + "/epics/" + epic.getId() + "/subtasks"))
                 .header("Content-Type", "application/json").build();

@@ -49,6 +49,4 @@ public interface TaskManager {
     void deleteSubtask(Integer id);
 
     void deleteSubtasks();
-
-    void calculateEpicFields(Epic epic);
 }

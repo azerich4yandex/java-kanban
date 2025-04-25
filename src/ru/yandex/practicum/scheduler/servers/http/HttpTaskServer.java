@@ -33,15 +33,15 @@ public class HttpTaskServer {
         // Создаём сервер
         this.httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
         // Добавляем точку входа /tasks
-        this.httpServer.createContext("/tasks", new TaskHttpHandler(taskManager, gson, DEFAULT_CHARSET));
+        this.httpServer.createContext("/tasks", new TaskHttpHandler(taskManager, gson));
         // Добавляем точку входа /subtasks
-        this.httpServer.createContext("/subtasks", new SubtaskHttpHandler(taskManager, gson, DEFAULT_CHARSET));
+        this.httpServer.createContext("/subtasks", new SubtaskHttpHandler(taskManager, gson));
         // Добавляем точку входа /epics
-        this.httpServer.createContext("/epics", new EpicHttpHandler(taskManager, gson, DEFAULT_CHARSET));
+        this.httpServer.createContext("/epics", new EpicHttpHandler(taskManager, gson));
         // Добавляем точку входа /history
-        this.httpServer.createContext("/history", new HistoryHttpHandler(taskManager, gson, DEFAULT_CHARSET));
+        this.httpServer.createContext("/history", new HistoryHttpHandler(taskManager, gson));
         // Добавляем точку входа /prioritized
-        this.httpServer.createContext("/prioritized", new PrioritizedHttpHandler(taskManager, gson, DEFAULT_CHARSET));
+        this.httpServer.createContext("/prioritized", new PrioritizedHttpHandler(taskManager, gson));
     }
 
     public static void main(String[] args) throws IOException {

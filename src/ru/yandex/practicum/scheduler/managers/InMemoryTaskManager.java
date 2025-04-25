@@ -180,6 +180,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epics.containsKey(epic.getId())) {
             Epic tempEpic = getEpicInternal(epic.getId());
 
+            calculateEpicFields(tempEpic);
             tempEpic.setName(epic.getName());
             tempEpic.setDescription(epic.getDescription());
 
@@ -192,8 +193,12 @@ public class InMemoryTaskManager implements TaskManager {
         if (id != null) {
             // Получим все дочерние подзадачи эпика
             for (Subtask subtask : getEpicSubtasks(id)) {
-                // и удалим каждую
-                deleteSubtask(subtask.getId());
+                // и удалим каждую из списка приоритетов,
+                deletePrioritizedTask(subtask);
+                // истории обращений
+                historyManager.remove(subtask.getId());
+                // и хранилища.
+                subtasks.remove(subtask.getId());
             }
             // Удаляем эпик из истории
             historyManager.remove(id);
@@ -267,7 +272,7 @@ public class InMemoryTaskManager implements TaskManager {
                 return subtask.getId();
             } else {
                 // Иначе возвращаем 0
-                throw new IllegalArgumentException("Эпик с id " + epic.getId() + " не найден в хранилище");
+                throw new IllegalArgumentException("Эпик с id " + subtask.getEpicId() + " не найден в хранилище");
             }
         } else {
             throw new IllegalArgumentException("Передана пустая подзадача");
@@ -325,20 +330,22 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubtasks() {
         // Пройдёмся по всем задачам.
         for (Subtask subtask : getSubtasks()) {
-            // и удалим каждую
-            deleteSubtask(subtask.getId());
+            // и удалим каждую из списка приоритетов
+            deletePrioritizedTask(subtask);
+            // и из истории
+            historyManager.remove(subtask.getId());
         }
+        // Очистим хранилище подзадач
+        subtasks.clear();
 
         // Для каждого эпика
         for (Epic epic : getEpics()) {
-            // Удаляем подзадачи
+            // Очищаем подзадачи
             epic.clearSubtasks();
             // и пересчитаем поля эпика
             calculateEpicFields(epic);
         }
 
-        // Очистим хранилище подзадач
-        subtasks.clear();
     }
 
     private void calculateEpicStatusField(Epic epic) {
@@ -400,12 +407,8 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-
-    @Override
-    public void calculateEpicFields(Epic epic) {
+    private void calculateEpicFields(Epic epic) {
         calculateEpicStatusField(epic);
         calculateEpicTimeFields(epic);
-
-        updateEpic(epic);
     }
 }

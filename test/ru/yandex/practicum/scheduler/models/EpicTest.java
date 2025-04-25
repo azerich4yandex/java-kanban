@@ -92,8 +92,6 @@ class EpicTest {
 
         subtask1.setStatus(StatusTypes.DONE);
         taskManager.updateSubtask(subtask1);
-        // Пересчитаем поля эпика
-        taskManager.calculateEpicFields(epic1);
 
         Optional<Epic> receivedEpic = taskManager.getEpicById(epic1.getId());
 
@@ -233,8 +231,6 @@ class EpicTest {
         taskManager.deleteSubtasks();
 
         for (Epic epic : taskManager.getEpics()) {
-            // Пересчитаем поля эпика
-            taskManager.calculateEpicFields(epic);
 
             if (epic.getStatus() != StatusTypes.NEW) {
                 isNew = false;
