@@ -5,8 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import ru.yandex.practicum.scheduler.managers.Managers;
@@ -21,7 +19,6 @@ import ru.yandex.practicum.scheduler.servers.http.typeadapters.LocalDateTimeType
 
 public class HttpTaskServer {
 
-    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     private static final int PORT = 8080;
     private final HttpServer httpServer;
     private final TaskManager taskManager = Managers.getDefault();
